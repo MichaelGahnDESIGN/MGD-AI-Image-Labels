@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Lokale Banner-Quelle für die native WordPress-Detailansicht. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 772 250" role="img" aria-labelledby="title description">
+  <title id="title">MGD KI-Bildkennzeichnung</title>
+  <desc id="description">Banner mit MGD KI-Bildkennzeichnung und Bildrahmen-Symbol.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="772" y2="250" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#11161B"/>
+      <stop offset="0.55" stop-color="#252C34"/>
+      <stop offset="1" stop-color="#080B0F"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="536" y1="46" x2="710" y2="213" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FF575D"/>
+      <stop offset="0.55" stop-color="#DD1820"/>
+      <stop offset="1" stop-color="#9B0710"/>
+    </linearGradient>
+  </defs>
+  <rect width="772" height="250" fill="url(#background)"/>
+  <circle cx="741" cy="-13" r="180" fill="#DD1820" fill-opacity="0.12"/>
+  <circle cx="690" cy="259" r="156" fill="#FFFFFF" fill-opacity="0.04"/>
+  <path d="M0 212C108 170 165 188 267 236" fill="none" stroke="#FFFFFF" stroke-opacity="0.08" stroke-width="2"/>
+  <text x="62" y="98" fill="#FFFFFF" font-family="Arial, sans-serif" font-size="35" font-weight="700">MGD KI-Bildkennzeichnung</text>
+  <text x="64" y="140" fill="#DCE2E8" font-family="Arial, sans-serif" font-size="18">Transparente Kennzeichnung. Direkt in deiner Mediathek.</text>
+  <rect x="594" y="43" width="116" height="116" rx="31" fill="#0B0F14" stroke="url(#accent)" stroke-width="8"/>
+  <circle cx="634" cy="82" r="14" fill="#F3F6F8"/>
+  <path d="M610 133L640 103L660 122L679 104L697 133H610Z" fill="#F3F6F8"/>
+  <rect x="628" y="139" width="94" height="48" rx="22" fill="url(#accent)"/>
+  <text x="675" y="172" fill="#FFFFFF" font-family="Arial, sans-serif" font-size="25" font-weight="700" text-anchor="middle">AI</text>
+</svg>
