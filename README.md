@@ -9,7 +9,7 @@ Es ergänzt die WordPress-Mediathek um eine Auswahl pro Bild und gibt ein dezent
 ## Funktionen
 
 - Auswahl direkt in den Anhang-Details der WordPress-Mediathek
-- Vier Statuswerte: Keine KI, Mit KI erstellt, Mit KI bearbeitet und Deepfake / täuschend echt
+- Fünf Statuswerte: Keine KI, Mit KI erstellt, Teilweise KI generiert, Mit KI bearbeitet und Deepfake / täuschend echt
 - Position des Labels in allen vier Bildecken
 - Helle, dunkle oder automatische Glas-Variante
 - Lokale, datensparsame Ausgabe ohne Drittanbieter
@@ -40,6 +40,7 @@ Die Einstellungen werden als drei WordPress-Anhangsmetadaten gespeichert. Beim P
 | --- | --- | --- |
 | Keine KI | Kein Label | Keine Kennzeichnung ausgeben |
 | Mit KI erstellt | `AI GENERATED` | Bild wurde vollständig oder überwiegend mit KI erzeugt |
+| Teilweise KI generiert | `AI PARTIALLY GENERATED` | Bild enthält erkennbare, KI-generierte Bestandteile |
 | Mit KI bearbeitet | `AI MODIFIED` | Bestehendes Bild wurde mit KI wesentlich verändert |
 | Deepfake / täuschend echt | `AI DEEPFAKE` | Bild kann einen authentischen Eindruck erwecken |
 
@@ -59,7 +60,7 @@ Die Styles liegen vollständig lokal in `assets/css/frontend.css` und können in
 Das Plugin speichert nur die Auswahl pro Anhang:
 
 ```text
-_mgd_ail_status     generated | modified | deepfake | none
+_mgd_ail_status     generated | partially-generated | modified | deepfake | none
 _mgd_ail_position   top-left | top-right | bottom-left | bottom-right
 _mgd_ail_theme      auto | light | dark
 ```
@@ -78,6 +79,7 @@ assets/
   js/media-save.js                 Speichern im Medien-Dialog
 includes/
   class-attachment-meta.php        Validierung und Zugriff auf Anhangsmetadaten
+  class-github-updater.php          Sichere Prüfung öffentlicher GitHub-Releases
   class-image-renderer.php          Frontend-Ausgabe und Divi-Kompatibilität
   class-media-ajax.php              Geschützter Speichern-Endpunkt
   class-media-fields.php            Felder in den Anhang-Details
@@ -106,9 +108,11 @@ git diff --check
 
 ## Releases und Updates
 
-Jede Version erhält einen Git-Tag im Format `vX.Y.Z` und ein ZIP-Release, dessen oberster Ordner `mgd-ai-image-labels` heißt. Aktuell werden Updates manuell über die WordPress-Plugin-Verwaltung installiert.
+Jede Version erhält einen Git-Tag im Format `vX.Y.Z` und ein ZIP-Release, dessen oberster Ordner `mgd-ai-image-labels` heißt. WordPress erkennt neuere öffentliche GitHub-Releases im üblichen Plugin-Update-Zyklus und zeigt sie in **Dashboard → Aktualisierungen** beziehungsweise **Plugins** an.
 
-Ein zentraler Update-Kanal ist als nächster Ausbauschritt vorgesehen. Er soll WordPress-konforme Update-Hinweise liefern, ohne Zugangsdaten im Plugin oder im Repository zu speichern.
+Die Prüfung ruft höchstens alle zwölf Stunden ausschließlich die öffentliche GitHub-Release-API dieses Repositories auf. Sie benötigt keine Zugangsdaten und überträgt keine Bilder, Bildmetadaten, Besucher- oder Nutzerdaten. Ein Release wird nur angeboten, wenn die Version neuer ist und eine exakt passende ZIP-Datei über `https://github.com` bereitsteht. Bei Netzwerk- oder Validierungsfehlern bleibt WordPress beim bisherigen Stand und führt kein Update aus.
+
+Automatische WordPress-Updates können Website-Administratoren wie bei anderen Plugins bewusst in der Plugin-Verwaltung aktivieren oder deaktivieren. Vor jedem Update empfiehlt sich ein getestetes Backup, zum Beispiel über UpdraftPlus.
 
 ## Sicherheit und Datenschutz
 
@@ -116,6 +120,7 @@ Ein zentraler Update-Kanal ist als nächster Ausbauschritt vorgesehen. Er soll W
 - Änderungen erfordern die passende WordPress-Berechtigung und einen Nonce.
 - Es werden keine personenbezogenen Daten, Bilder oder Analysedaten an externe Dienste übertragen.
 - Das Plugin speichert keine API-Schlüssel, Passwörter oder Tokens.
+- Die Update-Prüfung verwendet keine GitHub-Zugangsdaten und akzeptiert nur HTTPS-Pakete vom festgelegten öffentlichen GitHub-Repository.
 - Bitte veröffentliche niemals `wp-config.php`, Backups, Logs mit personenbezogenen Daten oder Zugangsdaten im Repository.
 
 ## Mitwirken
