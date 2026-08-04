@@ -10,6 +10,7 @@
 declare(strict_types=1);
 
 define( 'ABSPATH', __DIR__ . '/' );
+define( 'MGD_AI_IMAGE_LABELS_URL', 'https://example.test/wp-content/plugins/mgd-ai-image-labels/' );
 
 require_once dirname( __DIR__ ) . '/includes/class-github-updater.php';
 
@@ -70,6 +71,8 @@ $update = MGD_AI_Image_Labels_GitHub_Updater::build_update(
 );
 mgd_ail_updater_assert_same( '0.5.1', $update->new_version, 'Ein neuer GitHub-Release erzeugt einen WordPress-Update-Hinweis.' );
 mgd_ail_updater_assert_same( 'mgd-ai-image-labels/mgd-ai-image-labels.php', $update->plugin, 'Der Update-Hinweis verweist auf die exakte Plugin-Datei.' );
+mgd_ail_updater_assert_same( 'https://example.test/wp-content/plugins/mgd-ai-image-labels/assets/branding/icon-128x128.png', $update->icons['1x'], 'Das WordPress-Update-Objekt liefert das lokale reguläre Icon.' );
+mgd_ail_updater_assert_same( 'https://example.test/wp-content/plugins/mgd-ai-image-labels/assets/branding/banner-772x250.png', $update->banners['low'], 'Das WordPress-Update-Objekt liefert das lokale Banner für die Detailansicht.' );
 mgd_ail_updater_assert_same( null, MGD_AI_Image_Labels_GitHub_Updater::build_update( $release, '0.5.1', 'mgd-ai-image-labels/mgd-ai-image-labels.php' ), 'Die bereits installierte Version erzeugt keinen Update-Hinweis.' );
 
 $plugin_source = file_get_contents( dirname( __DIR__ ) . '/mgd-ai-image-labels.php' );

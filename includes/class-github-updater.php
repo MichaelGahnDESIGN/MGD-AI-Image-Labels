@@ -95,6 +95,7 @@ final class MGD_AI_Image_Labels_GitHub_Updater {
 	public static function build_update( array $release, string $current, string $plugin_file ): ?object {
 		$version = $release['version'] ?? '';
 		$package = $release['package'] ?? '';
+		$branding = self::get_branding_urls();
 
 		if ( ! is_string( $version ) || ! is_string( $package ) || '' === $version || '' === $package || ! version_compare( $version, $current, '>' ) ) {
 			return null;
@@ -109,6 +110,8 @@ final class MGD_AI_Image_Labels_GitHub_Updater {
 			'tested'      => '6.0',
 			'requires'    => '6.0',
 			'requires_php'=> '8.1',
+			'icons'       => $branding['icons'],
+			'banners'     => $branding['banners'],
 		);
 	}
 
@@ -152,6 +155,7 @@ final class MGD_AI_Image_Labels_GitHub_Updater {
 		}
 
 		$release = self::get_latest_release();
+		$branding = self::get_branding_urls();
 
 		if ( empty( $release['version'] ) || empty( $release['package'] ) ) {
 			return $result;
@@ -165,8 +169,40 @@ final class MGD_AI_Image_Labels_GitHub_Updater {
 			'requires_php'  => '8.1',
 			'homepage'      => 'https://github.com/MichaelGahnDESIGN/MGD-AI-Image-Labels',
 			'download_link' => $release['package'],
+			'icons'         => $branding['icons'],
+			'banners'       => $branding['banners'],
 			'sections'      => array(
 				'description' => 'Transparente und barrierefreie Kennzeichnung von KI-bezogenen Bildern direkt in der WordPress-Mediathek.',
+			),
+		);
+	}
+
+	/**
+	 * Liefert ausschließlich lokale, vom Plugin-Paket ausgelieferte Branding-URLs.
+	 *
+	 * Der sichere Leerwert hilft den unabhängigen PHP-Tests und verhindert, dass
+	 * diese Klasse außerhalb von WordPress versehentlich eine externe URL baut.
+	 *
+	 * @return array{icons: array<string, string>, banners: array<string, string>}
+	 */
+	private static function get_branding_urls(): array {
+		if ( ! defined( 'MGD_AI_IMAGE_LABELS_URL' ) || ! is_string( MGD_AI_IMAGE_LABELS_URL ) || '' === MGD_AI_IMAGE_LABELS_URL ) {
+			return array(
+				'icons'   => array(),
+				'banners' => array(),
+			);
+		}
+
+		$base_url = rtrim( MGD_AI_IMAGE_LABELS_URL, '/' ) . '/assets/branding/';
+
+		return array(
+			'icons'   => array(
+				'1x' => $base_url . 'icon-128x128.png',
+				'2x' => $base_url . 'icon-256x256.png',
+			),
+			'banners' => array(
+				'low'  => $base_url . 'banner-772x250.png',
+				'high' => $base_url . 'banner-772x250.png',
 			),
 		);
 	}
