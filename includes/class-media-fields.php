@@ -43,10 +43,11 @@ final class MGD_AI_Image_Labels_Media_Fields {
 			'KI-Kennzeichnung',
 			$values['status'],
 			array(
-				'none'      => 'Keine KI',
-				'generated' => 'Mit KI erstellt',
-				'modified'  => 'Mit KI bearbeitet',
-				'deepfake'  => 'Deepfake / täuschend echt',
+				'none'                => 'Keine KI',
+				'generated'           => 'Mit KI erstellt',
+				'partially-generated' => 'Teilweise KI generiert',
+				'modified'            => 'Mit KI bearbeitet',
+				'deepfake'            => 'Deepfake / täuschend echt',
 			),
 			'Legt die transparente Kennzeichnung für dieses Bild fest.'
 		);

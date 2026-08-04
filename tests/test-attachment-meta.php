@@ -61,7 +61,7 @@ function mgd_ail_assert_allowed_values( array $values, callable $sanitizer, stri
 }
 
 mgd_ail_assert_allowed_values(
-	array( 'none', 'generated', 'modified', 'deepfake' ),
+	array( 'none', 'generated', 'partially-generated', 'modified', 'deepfake' ),
 	array( MGD_AI_Image_Labels_Attachment_Meta::class, 'sanitize_status' ),
 	'Status'
 );

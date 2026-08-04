@@ -79,6 +79,13 @@ mgd_ail_renderer_assert_contains( 'AI MODIFIED', $modified, 'KI-bearbeitete Bild
 mgd_ail_renderer_assert_contains( 'mgd-ail-position-bottom-left', $modified, 'Die gewählte untere linke Position wird als Klasse ausgegeben.' );
 mgd_ail_renderer_assert_contains( 'mgd-ail-theme-dark', $modified, 'Die gewählte dunkle Glasvariante wird als Klasse ausgegeben.' );
 
+$partially_generated = MGD_AI_Image_Labels_Image_Renderer::render_badge(
+	$image_html,
+	array( 'status' => 'partially-generated', 'position' => 'bottom-right', 'theme' => 'auto' )
+);
+mgd_ail_renderer_assert_contains( 'AI PARTIALLY GENERATED', $partially_generated, 'Teilweise KI-generierte Bilder erhalten den sichtbaren Text.' );
+mgd_ail_renderer_assert_contains( 'mgd-ail-position-bottom-right', $partially_generated, 'Teilweise KI-generierte Bilder respektieren die gewählte Position.' );
+
 $deepfake = MGD_AI_Image_Labels_Image_Renderer::render_badge(
 	$image_html,
 	array( 'status' => 'deepfake', 'position' => 'top-right', 'theme' => 'auto' )

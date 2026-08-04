@@ -22,7 +22,7 @@ final class MGD_AI_Image_Labels_Attachment_Meta {
 	public const THEME_KEY    = '_mgd_ail_theme';
 
 	/** @var array<int, string> */
-	private const STATUSES = array( 'none', 'generated', 'modified', 'deepfake' );
+	private const STATUSES = array( 'none', 'generated', 'partially-generated', 'modified', 'deepfake' );
 
 	/** @var array<int, string> */
 	private const POSITIONS = array( 'top-left', 'top-right', 'bottom-left', 'bottom-right' );
