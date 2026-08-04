@@ -19,9 +19,10 @@ final class MGD_AI_Image_Labels_Image_Renderer {
 
 	/** @var array<string, string> */
 	private const LABELS = array(
-		'generated' => 'AI GENERATED',
-		'modified'  => 'AI MODIFIED',
-		'deepfake'  => 'AI DEEPFAKE',
+		'generated'           => 'AI GENERATED',
+		'partially-generated' => 'AI PARTIALLY GENERATED',
+		'modified'            => 'AI MODIFIED',
+		'deepfake'            => 'AI DEEPFAKE',
 	);
 
 	/**
