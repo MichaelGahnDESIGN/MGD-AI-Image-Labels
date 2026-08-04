@@ -22,6 +22,12 @@ function mgd_ail_updater_assert_same( $expected, $actual, string $message ): voi
 	}
 }
 
+function mgd_ail_updater_assert_contains( string $needle, string $haystack, string $message ): void {
+	if ( false === strpos( $haystack, $needle ) ) {
+		throw new RuntimeException( $message . ' Fehlend: ' . $needle );
+	}
+}
+
 $valid_release = array(
 	'tag_name' => 'v0.5.1',
 	'assets'   => array(
@@ -56,5 +62,22 @@ mgd_ail_updater_assert_same(
 	),
 	'Fremde Download-Quellen werden verworfen.'
 );
+
+$update = MGD_AI_Image_Labels_GitHub_Updater::build_update(
+	$release,
+	'0.1.3',
+	'mgd-ai-image-labels/mgd-ai-image-labels.php'
+);
+mgd_ail_updater_assert_same( '0.5.1', $update->new_version, 'Ein neuer GitHub-Release erzeugt einen WordPress-Update-Hinweis.' );
+mgd_ail_updater_assert_same( 'mgd-ai-image-labels/mgd-ai-image-labels.php', $update->plugin, 'Der Update-Hinweis verweist auf die exakte Plugin-Datei.' );
+mgd_ail_updater_assert_same( null, MGD_AI_Image_Labels_GitHub_Updater::build_update( $release, '0.5.1', 'mgd-ai-image-labels/mgd-ai-image-labels.php' ), 'Die bereits installierte Version erzeugt keinen Update-Hinweis.' );
+
+$plugin_source = file_get_contents( dirname( __DIR__ ) . '/mgd-ai-image-labels.php' );
+if ( false === $plugin_source ) {
+	throw new RuntimeException( 'Die Hauptdatei des Plugins konnte nicht gelesen werden.' );
+}
+mgd_ail_updater_assert_contains( 'Version:            0.5.1', $plugin_source, 'Die Plugin-Metadaten enthalten die veröffentlichte Version 0.5.1.' );
+mgd_ail_updater_assert_contains( 'Update URI:         https://github.com/MichaelGahnDESIGN/MGD-AI-Image-Labels', $plugin_source, 'Die Plugin-Metadaten benennen die eindeutige öffentliche Update-Quelle.' );
+mgd_ail_updater_assert_contains( "define( 'MGD_AI_IMAGE_LABELS_VERSION', '0.5.1' );", $plugin_source, 'Die Laufzeit-Konstante entspricht der Plugin-Version.' );
 
 echo "PASS: Öffentliche GitHub-Releases werden sicher normalisiert.\n";

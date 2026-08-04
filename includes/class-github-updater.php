@@ -22,6 +22,26 @@ if ( ! defined( 'ABSPATH' ) ) {
 final class MGD_AI_Image_Labels_GitHub_Updater {
 
 	/**
+	 * Öffentlicher, fest verdrahteter Endpunkt für den neuesten stabilen Release.
+	 */
+	private const RELEASE_ENDPOINT = 'https://api.github.com/repos/MichaelGahnDESIGN/MGD-AI-Image-Labels/releases/latest';
+
+	/**
+	 * Eindeutiger Plugin-Slug für WordPress und die Update-Informationen.
+	 */
+	private const PLUGIN_SLUG = 'mgd-ai-image-labels';
+
+	/**
+	 * Zwölf Stunden vermeiden unnötige API-Aufrufe und GitHub-Ratenlimits.
+	 */
+	private const CACHE_TTL = 43200;
+
+	/**
+	 * Lokaler Schlüssel für den Netzwerk-Transienten.
+	 */
+	private const CACHE_KEY = 'mgd_ail_github_latest_release';
+
+	/**
 	 * Erwarteter Name des Release-Pakets ohne Versionsnummer.
 	 */
 	private const PACKAGE_PREFIX = 'mgd-ai-image-labels-';
@@ -54,6 +74,144 @@ final class MGD_AI_Image_Labels_GitHub_Updater {
 			'version' => $version,
 			'package' => $package,
 		);
+	}
+
+	/**
+	 * Registriert die nativen WordPress-Filter für verfügbare Plugin-Updates.
+	 */
+	public static function register(): void {
+		add_filter( 'pre_set_site_transient_update_plugins', array( self::class, 'inject_update' ) );
+		add_filter( 'plugins_api', array( self::class, 'provide_plugin_information' ), 20, 3 );
+	}
+
+	/**
+	 * Baut ein WordPress-kompatibles Update-Objekt nur für neuere Versionen.
+	 *
+	 * @param array<string, mixed> $release      Bereits validierte Release-Daten.
+	 * @param string               $current      Lokal installierte Plugin-Version.
+	 * @param string               $plugin_file  Von WordPress erwarteter Plugin-Dateiname.
+	 * @return object|null Ein Update-Objekt oder null, wenn kein Update nötig ist.
+	 */
+	public static function build_update( array $release, string $current, string $plugin_file ): ?object {
+		$version = $release['version'] ?? '';
+		$package = $release['package'] ?? '';
+
+		if ( ! is_string( $version ) || ! is_string( $package ) || '' === $version || '' === $package || ! version_compare( $version, $current, '>' ) ) {
+			return null;
+		}
+
+		return (object) array(
+			'slug'        => self::PLUGIN_SLUG,
+			'plugin'      => $plugin_file,
+			'new_version' => $version,
+			'url'         => 'https://github.com/MichaelGahnDESIGN/MGD-AI-Image-Labels',
+			'package'     => $package,
+			'tested'      => '6.0',
+			'requires'    => '6.0',
+			'requires_php'=> '8.1',
+		);
+	}
+
+	/**
+	 * Ergänzt WordPress nur dann um ein Update, wenn ein verifizierter Release
+	 * wirklich neuer als die lokal installierte Version ist.
+	 *
+	 * @param mixed $transient WordPress-Transient mit bereits geprüften Plugins.
+	 * @return mixed Unveränderter oder um dieses Plugin ergänzter Transient.
+	 */
+	public static function inject_update( $transient ) {
+		if ( ! is_object( $transient ) || empty( $transient->checked ) ) {
+			return $transient;
+		}
+
+		$plugin_file = plugin_basename( MGD_AI_IMAGE_LABELS_FILE );
+		$update      = self::build_update( self::get_latest_release(), MGD_AI_IMAGE_LABELS_VERSION, $plugin_file );
+
+		if ( null !== $update ) {
+			if ( ! isset( $transient->response ) || ! is_array( $transient->response ) ) {
+				$transient->response = array();
+			}
+
+			$transient->response[ $plugin_file ] = $update;
+		}
+
+		return $transient;
+	}
+
+	/**
+	 * Liefert die Detailansicht, die WordPress im Update-Dialog anzeigen kann.
+	 *
+	 * @param mixed  $result Bisheriges Ergebnis eines anderen Update-Providers.
+	 * @param string $action Angeforderte WordPress-Update-Aktion.
+	 * @param mixed  $args   Argumente der Update-Abfrage.
+	 * @return mixed Eigenes Detailobjekt oder das unveränderte Fremdergebnis.
+	 */
+	public static function provide_plugin_information( $result, string $action, $args ) {
+		if ( 'plugin_information' !== $action || ! is_object( $args ) || self::PLUGIN_SLUG !== ( $args->slug ?? '' ) ) {
+			return $result;
+		}
+
+		$release = self::get_latest_release();
+
+		if ( empty( $release['version'] ) || empty( $release['package'] ) ) {
+			return $result;
+		}
+
+		return (object) array(
+			'name'          => 'MGD KI-Bildkennzeichnung',
+			'slug'          => self::PLUGIN_SLUG,
+			'version'       => $release['version'],
+			'requires'      => '6.0',
+			'requires_php'  => '8.1',
+			'homepage'      => 'https://github.com/MichaelGahnDESIGN/MGD-AI-Image-Labels',
+			'download_link' => $release['package'],
+			'sections'      => array(
+				'description' => 'Transparente und barrierefreie Kennzeichnung von KI-bezogenen Bildern direkt in der WordPress-Mediathek.',
+			),
+		);
+	}
+
+	/**
+	 * Liest eine Release-Antwort höchstens alle zwölf Stunden aus dem öffentlichen
+	 * GitHub-Endpunkt. Bei jedem Fehler bleibt WordPress sicher beim bisherigen Stand.
+	 *
+	 * @return array{version: string, package: string}|array{}
+	 */
+	private static function get_latest_release(): array {
+		$cached = get_site_transient( self::CACHE_KEY );
+
+		if ( is_array( $cached ) ) {
+			return $cached;
+		}
+
+		$response = wp_safe_remote_get(
+			self::RELEASE_ENDPOINT,
+			array(
+				'timeout' => 8,
+				'headers' => array(
+					'Accept'     => 'application/vnd.github+json',
+					'User-Agent' => 'MGD-AI-Image-Labels/' . MGD_AI_IMAGE_LABELS_VERSION,
+				),
+			)
+		);
+
+		if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
+			return array();
+		}
+
+		$decoded = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		if ( ! is_array( $decoded ) ) {
+			return array();
+		}
+
+		$release = self::normalize_release( $decoded );
+
+		if ( ! empty( $release ) ) {
+			set_site_transient( self::CACHE_KEY, $release, self::CACHE_TTL );
+		}
+
+		return $release;
 	}
 
 	/**
