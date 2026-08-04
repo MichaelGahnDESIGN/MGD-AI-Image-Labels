@@ -16,6 +16,9 @@ Es ergänzt die WordPress-Mediathek um eine Auswahl pro Bild und gibt ein dezent
 - Barrierefreie Semantik; Deepfake-Hinweise enthalten einen erweiterten Screenreader-Text
 - Unterstützung für WordPress-Bilder, Beitragsbilder sowie Divi-5- und klassische Divi-Bildmodule
 - Eigener Speichern-Button für eine nachvollziehbare Medienbearbeitung
+- Professionelles, lokal ausgeliefertes Icon und Banner im WordPress-Update- und Detaildialog
+- Native Detailansicht in der Pluginliste mit Installation, FAQ und Änderungsprotokoll
+- Website-, Dokumentations-, Support- und GitHub-Links; externe Links öffnen sicher in einem neuen Tab
 
 ## Voraussetzungen
 
@@ -55,6 +58,12 @@ Das Badge ist bewusst klein und dezent. Position, helle/dunkle Glasoptik und ein
 
 Die Styles liegen vollständig lokal in `assets/css/frontend.css` und können in einem Child Theme gezielt überschrieben werden.
 
+## Plugin-Verwaltung im Backend
+
+In der WordPress-Pluginliste zeigt **Details anzeigen** eine eigene, native WordPress-Detailansicht. Sie bleibt auch verfügbar, wenn GitHub gerade nicht erreichbar ist. Die Ansicht erklärt Installation, Bedienung, häufige Fragen und die Änderungen der letzten Versionen.
+
+Das Plugin liefert Icon, Banner und eine dezente animierte Variante vollständig lokal aus. Die Animation ist ausschließlich für die Projektdokumentation gedacht; im WordPress-Backend bleibt das Icon bewusst statisch, damit die Verwaltung ruhig und barrierearm bleibt.
+
 ## Technische Arbeitsweise
 
 Das Plugin speichert nur die Auswahl pro Anhang:
@@ -75,6 +84,7 @@ Einige Themes geben Beitragsbilder direkt als `<img>` aus. Dafür enthält das P
 
 ```text
 assets/
+  branding/                         Lokales Icon, Banner und Dokumentations-Animation
   css/frontend.css                 Lokale Frontend-Gestaltung
   js/media-save.js                 Speichern im Medien-Dialog
 includes/
@@ -84,6 +94,7 @@ includes/
   class-media-ajax.php              Geschützter Speichern-Endpunkt
   class-media-fields.php            Felder in den Anhang-Details
   class-plugin.php                  Plugin-Initialisierung
+  class-plugin-presentation.php     Service-Links und native Detailansicht
 tests/                              Eigenständige PHP-Tests ohne WordPress-Installation
 mgd-ai-image-labels.php            Plugin-Header und Startpunkt
 ```

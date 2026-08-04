@@ -32,6 +32,7 @@ final class MGD_AI_Image_Labels_Plugin {
 	public static function register(): void {
 		require_once MGD_AI_IMAGE_LABELS_DIR . 'includes/class-attachment-meta.php';
 		require_once MGD_AI_IMAGE_LABELS_DIR . 'includes/class-github-updater.php';
+		require_once MGD_AI_IMAGE_LABELS_DIR . 'includes/class-plugin-presentation.php';
 		require_once MGD_AI_IMAGE_LABELS_DIR . 'includes/class-media-fields.php';
 		require_once MGD_AI_IMAGE_LABELS_DIR . 'includes/class-media-ajax.php';
 		require_once MGD_AI_IMAGE_LABELS_DIR . 'includes/class-image-renderer.php';
@@ -42,6 +43,7 @@ final class MGD_AI_Image_Labels_Plugin {
 		MGD_AI_Image_Labels_Media_Fields::register();
 		MGD_AI_Image_Labels_Media_Ajax::register();
 		MGD_AI_Image_Labels_Image_Renderer::register();
+		MGD_AI_Image_Labels_Plugin_Presentation::register();
 
 		// Das Plugin nutzt den normalen WordPress-Update-Dialog. Die Updater-Klasse
 		// kommuniziert dabei ausschließlich mit dem öffentlichen GitHub-Release-Endpunkt.

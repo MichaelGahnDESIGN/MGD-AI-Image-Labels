@@ -154,26 +154,46 @@ final class MGD_AI_Image_Labels_GitHub_Updater {
 			return $result;
 		}
 
-		$release = self::get_latest_release();
+		// Die Detailansicht bleibt bewusst nutzbar, wenn GitHub temporär nicht
+		// erreichbar ist. Ein Netzwerkfehler darf Hilfe im WordPress-Backend nie
+		// verschwinden lassen; nur der Download-Link bleibt dann leer.
+		$release  = self::get_latest_release();
 		$branding = self::get_branding_urls();
-
-		if ( empty( $release['version'] ) || empty( $release['package'] ) ) {
-			return $result;
-		}
+		$version  = isset( $release['version'] ) && is_string( $release['version'] ) ? $release['version'] : MGD_AI_IMAGE_LABELS_VERSION;
+		$package  = isset( $release['package'] ) && is_string( $release['package'] ) ? $release['package'] : '';
 
 		return (object) array(
 			'name'          => 'MGD KI-Bildkennzeichnung',
 			'slug'          => self::PLUGIN_SLUG,
-			'version'       => $release['version'],
+			'version'       => $version,
 			'requires'      => '6.0',
 			'requires_php'  => '8.1',
+			'author'        => '<a href="https://michael-gahn.de/" target="_blank" rel="noopener noreferrer">Michael Gahn DESIGN</a>',
+			'author_profile'=> 'https://michael-gahn.de/',
 			'homepage'      => 'https://github.com/MichaelGahnDESIGN/MGD-AI-Image-Labels',
-			'download_link' => $release['package'],
+			'support_url'   => 'https://michael-gahn.de/support/',
+			'download_link' => $package,
 			'icons'         => $branding['icons'],
 			'banners'       => $branding['banners'],
-			'sections'      => array(
-				'description' => 'Transparente und barrierefreie Kennzeichnung von KI-bezogenen Bildern direkt in der WordPress-Mediathek.',
-			),
+			'sections'      => self::get_information_sections(),
+		);
+	}
+
+	/**
+	 * Liefert die verständlichen Inhalte des nativen WordPress-Detailfensters.
+	 *
+	 * Der Inhalt ist bewusst lokal und statisch: Für diese Hilfe werden keine
+	 * personenbezogenen Daten, keine Tracking-Skripte und keine Fremdinhalte
+	 * geladen. Die Links öffnen sich aus der Detailansicht heraus separat.
+	 *
+	 * @return array<string, string>
+	 */
+	private static function get_information_sections(): array {
+		return array(
+			'description' => '<h3>Transparente Bildkennzeichnung – direkt in der Mediathek</h3><p>MGD KI-Bildkennzeichnung ergänzt WordPress um eine klare Auswahl für KI-bezogene Bilder. Für jedes Bild lassen sich Status, Position und eine kontraststarke Glas-Variante separat festlegen.</p><h4>Das Plugin bietet</h4><ul><li>fünf eindeutige Kennzeichnungsarten – von „Keine KI“ bis „Deepfake / täuschend echt“;</li><li>eine dezente, barrierefreundliche Ausgabe mit wählbarer Position;</li><li>helle, dunkle oder automatische Glas-Optik;</li><li>eine Speicherung direkt aus den Anhang-Details der Mediathek;</li><li>eine lokale Ausgabe ohne externe Skripte oder Tracking.</li></ul><p><a href="https://michael-gahn.de/" target="_blank" rel="noopener noreferrer">Michael Gahn DESIGN besuchen</a> · <a href="https://michael-gahn.de/support/" target="_blank" rel="noopener noreferrer">Support öffnen</a></p>',
+			'installation' => '<h3>Installation und erster Einsatz</h3><ol><li>Die ZIP-Datei unter <strong>Plugins → Installieren → Plugin hochladen</strong> auswählen und aktivieren.</li><li>In der <strong>Mediathek</strong> ein Bild öffnen.</li><li>Unter <strong>KI-Kennzeichnung</strong> den passenden Status, die Position und die Glas-Variante wählen.</li><li><strong>Kennzeichnung speichern</strong> wählen und die Seite mit dem Bild im Frontend prüfen.</li></ol><p>Das Plugin verändert keine Bilddateien. Es speichert nur die gewählte Kennzeichnungs-Information als geschützte WordPress-Anhang-Metadaten.</p>',
+			'faq' => '<h3>Häufige Fragen</h3><h4>Warum sehe ich kein Label?</h4><p>Prüfe zuerst, ob für genau dieses Bild ein Status außer „Keine KI“ gespeichert wurde. Leere ggf. den Seiten- und Browser-Cache.</p><h4>Wird mein Bild verändert?</h4><p>Nein. Das Label wird im Frontend ergänzend ausgegeben; die Originaldatei bleibt unverändert.</p><h4>Kann ich die Position pro Bild wählen?</h4><p>Ja. Oben links, oben rechts, unten links und unten rechts stehen pro Medien-Anhang zur Verfügung.</p><h4>Wo erhalte ich Hilfe?</h4><p><a href="https://michael-gahn.de/support/" target="_blank" rel="noopener noreferrer">Support bei Michael Gahn DESIGN</a> sowie die <a href="https://github.com/MichaelGahnDESIGN/MGD-AI-Image-Labels/wiki" target="_blank" rel="noopener noreferrer">Dokumentation im Wiki</a> helfen weiter.</p>',
+			'changelog' => '<h3>Änderungsprotokoll</h3><h4>0.5.3</h4><ul><li>Professionelles lokales Icon und Banner für den WordPress-Update- und Detaildialog ergänzt.</li><li>Native Detailansicht mit Installation, FAQ, Änderungsprotokoll sowie Website-, Dokumentations-, Support- und GitHub-Links ergänzt.</li><li>Autorenlink auf Michael Gahn DESIGN ergänzt.</li></ul><h4>0.5.2</h4><ul><li>Speichern in den Anhang-Details gegen doppelte, unsichtbare Felder abgesichert.</li><li>Gespeicherte Werte nach dem AJAX-Speichern unmittelbar in die aktuelle Ansicht zurückgeschrieben.</li></ul><h4>0.5.1</h4><ul><li>Status „Teilweise KI generiert“ ergänzt.</li><li>Sicherer GitHub-basierter Update-Mechanismus ergänzt.</li></ul>',
 		);
 	}
 
