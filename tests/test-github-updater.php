@@ -76,8 +76,8 @@ $plugin_source = file_get_contents( dirname( __DIR__ ) . '/mgd-ai-image-labels.p
 if ( false === $plugin_source ) {
 	throw new RuntimeException( 'Die Hauptdatei des Plugins konnte nicht gelesen werden.' );
 }
-mgd_ail_updater_assert_contains( 'Version:            0.5.1', $plugin_source, 'Die Plugin-Metadaten enthalten die veröffentlichte Version 0.5.1.' );
+mgd_ail_updater_assert_contains( 'Version:            0.5.2', $plugin_source, 'Die Plugin-Metadaten enthalten die veröffentlichte Fehlerbehebungs-Version 0.5.2.' );
 mgd_ail_updater_assert_contains( 'Update URI:         https://github.com/MichaelGahnDESIGN/MGD-AI-Image-Labels', $plugin_source, 'Die Plugin-Metadaten benennen die eindeutige öffentliche Update-Quelle.' );
-mgd_ail_updater_assert_contains( "define( 'MGD_AI_IMAGE_LABELS_VERSION', '0.5.1' );", $plugin_source, 'Die Laufzeit-Konstante entspricht der Plugin-Version.' );
+mgd_ail_updater_assert_contains( "define( 'MGD_AI_IMAGE_LABELS_VERSION', '0.5.2' );", $plugin_source, 'Die Laufzeit-Konstante entspricht der Plugin-Version.' );
 
 echo "PASS: Öffentliche GitHub-Releases werden sicher normalisiert.\n";
