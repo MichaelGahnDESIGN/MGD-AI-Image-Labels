@@ -19,4 +19,12 @@ if ( false === strpos( $script, 'attachments[{{ID}}]' ) ) {
 	throw new RuntimeException( 'Der Medien-Speicherbutton unterstützt den WordPress-Platzhalter {{ID}} noch nicht.' );
 }
 
-echo "PASS: Der Medien-Speicherbutton unterstützt konkrete und dynamische WordPress-Anhangsfelder.\n";
+if ( false === strpos( $script, '$button.closest( \'.attachment-details\' )' ) ) {
+	throw new RuntimeException( 'Der Medien-Speicherbutton begrenzt die Feldsuche noch nicht auf den aktuell geöffneten Anhang.' );
+}
+
+if ( false === strpos( $script, '$scope.find( selector ).first()' ) ) {
+	throw new RuntimeException( 'Der Medien-Speicherbutton liest noch nicht das erste passende Feld innerhalb des aktuellen Anhangs.' );
+}
+
+echo "PASS: Der Medien-Speicherbutton liest ausschließlich Felder des aktuellen Anhangs.\n";
