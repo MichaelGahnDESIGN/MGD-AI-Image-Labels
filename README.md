@@ -15,7 +15,7 @@ Es ergänzt die WordPress-Mediathek um eine Auswahl pro Bild und gibt ein dezent
 - Lokale, datensparsame Ausgabe ohne Drittanbieter
 - Barrierefreie Semantik; Deepfake-Hinweise enthalten einen erweiterten Screenreader-Text
 - Unterstützung für WordPress-Bilder, Beitragsbilder sowie Divi-5- und klassische Divi-Bildmodule
-- Eigener Speichern-Button für eine nachvollziehbare Medienbearbeitung – auch im WordPress-Medienfenster des Divi-5-Builders
+- Eigener Speichern-Button für eine nachvollziehbare Medienbearbeitung – auch im separaten Medienfenster des Divi-5-Builders
 - Zentrale Verwaltung unter **Medien → KI-Bildkennzeichnung** mit vier klar getrennten Bereichen
 - Globale, streng validierte Standards für Schriftgröße, Abstände, Radius, Glasunschärfe, Standard-Position und Glas-Variante
 - Sicherer Hintergrundbild-Shortcode für Divi-Container: `[mgd_ai_label]`
@@ -43,7 +43,7 @@ Die Einstellungen werden als drei WordPress-Anhangsmetadaten gespeichert. Beim P
 
 ### Sicher speichern – auch im Divi-5-Builder
 
-Der Button **Kennzeichnung speichern** speichert Status, Position und Glas-Variante für genau den gerade geöffneten Medien-Anhang. Im Divi-5-Medienfenster sucht das Skript bewusst zuerst innerhalb des sichtbaren Anhang-Details-Dialogs und nicht global in der Seite. So werden die Werte nicht versehentlich aus einem verdeckten oder vorherigen Dialog gelesen. Nach erfolgreicher Speicherung kann der Anhang gewechselt oder das Medienfenster neu geöffnet werden; die drei Werte werden erneut aus den WordPress-Anhangsmetadaten geladen.
+Der Button **Kennzeichnung speichern** speichert Status, Position und Glas-Variante für genau den gerade geöffneten Medien-Anhang. Im Divi-5-Medienfenster läuft die Medienbibliothek in einem separaten Builder-Fenster. Deshalb wird der schlanke, lokale Speichern-Handler gezielt auch dort geladen und arbeitet ohne Abhängigkeit von jQuery. Er sucht bewusst zuerst innerhalb des sichtbaren Anhang-Details-Dialogs und nicht global in der Seite. So werden die Werte nicht versehentlich aus einem verdeckten oder vorherigen Dialog gelesen. Nach erfolgreicher Speicherung kann der Anhang gewechselt oder das Medienfenster neu geöffnet werden; die drei Werte werden erneut aus den WordPress-Anhangsmetadaten geladen.
 
 ## Kennzeichnungsarten
 

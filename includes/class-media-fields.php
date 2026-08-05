@@ -23,6 +23,7 @@ final class MGD_AI_Image_Labels_Media_Fields {
 		add_filter( 'attachment_fields_to_edit', array( self::class, 'add_fields' ), 10, 2 );
 		add_filter( 'attachment_fields_to_save', array( self::class, 'save_fields' ), 10, 2 );
 		add_action( 'admin_enqueue_scripts', array( self::class, 'enqueue_media_script' ) );
+		add_action( 'wp_enqueue_scripts', array( self::class, 'enqueue_divi_visual_builder_script' ) );
 	}
 
 	/**
@@ -112,25 +113,51 @@ final class MGD_AI_Image_Labels_Media_Fields {
 			return;
 		}
 
+		self::enqueue_save_script();
+	}
+
+	/**
+	 * Lädt denselben Handler im Divi-5-Visual-Builder.
+	 *
+	 * Divi 5 rendert die bearbeitete Seite innerhalb eines separaten
+	 * app_window-Iframes. Dieser ist ein Frontend-Request und durchläuft daher
+	 * nicht den WordPress-Hook admin_enqueue_scripts. Ohne diese zweite
+	 * Einbindung bleibt der Speichern-Button sichtbar, besitzt im Builder aber
+	 * keinen aktiven JavaScript-Handler.
+	 */
+	public static function enqueue_divi_visual_builder_script(): void {
+		if ( ! self::is_divi_visual_builder_request() ) {
+			return;
+		}
+
+		self::enqueue_save_script();
+	}
+
+	/** Lädt den unabhängigen, ohne jQuery arbeitenden Medien-Speicherhandler. */
+	private static function enqueue_save_script(): void {
+
 		wp_enqueue_script(
 			'mgd-ail-media-save',
 			MGD_AI_IMAGE_LABELS_URL . 'assets/js/media-save.js',
-			array( 'jquery' ),
+			array(),
 			MGD_AI_IMAGE_LABELS_VERSION,
 			true
 		);
+	}
 
-		wp_localize_script(
-			'mgd-ail-media-save',
-			'MGDAILMediaSave',
-			array(
-				'ajaxUrl'       => admin_url( 'admin-ajax.php' ),
-				'nonce'         => wp_create_nonce( 'mgd_ail_save_attachment' ),
-				'savingText'    => 'Speichere …',
-				'successText'   => 'Kennzeichnung gespeichert.',
-				'errorText'     => 'Die Kennzeichnung konnte nicht gespeichert werden.',
-			)
-		);
+	/**
+	 * Erkennt ausschließlich den offiziellen Divi-Visual-Builder-Request.
+	 *
+	 * Sowohl die äußere Builder-Seite als auch deren app_window erhalten den
+	 * Handler. Je nach Divi-5-Version wird der WordPress-Medienmodal im äußeren
+	 * Dokument oder innerhalb des Frames geöffnet.
+	 */
+	private static function is_divi_visual_builder_request(): bool {
+		if ( ! isset( $_GET['et_fb'] ) || ! is_string( $_GET['et_fb'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return false;
+		}
+
+		return '1' === sanitize_text_field( wp_unslash( $_GET['et_fb'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	}
 
 	/**
@@ -141,8 +168,10 @@ final class MGD_AI_Image_Labels_Media_Fields {
 	 */
 	public static function get_save_button_html( int $attachment_id ): string {
 		return sprintf(
-			'<button type="button" class="button button-primary" data-mgd-ail-save="%1$d">%2$s</button><span class="mgd-ail-save-feedback" aria-live="polite"></span>',
+			'<button type="button" class="button button-primary" data-mgd-ail-save="%1$d" data-mgd-ail-ajax-url="%2$s" data-mgd-ail-nonce="%3$s">%4$s</button><span class="mgd-ail-save-feedback" aria-live="polite"></span>',
 			$attachment_id,
+			esc_url( admin_url( 'admin-ajax.php' ) ),
+			esc_attr( wp_create_nonce( 'mgd_ail_save_attachment' ) ),
 			esc_html( 'Kennzeichnung speichern' )
 		);
 	}

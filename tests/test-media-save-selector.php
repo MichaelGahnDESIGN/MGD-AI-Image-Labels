@@ -19,20 +19,16 @@ if ( false === strpos( $script, 'attachments[{{ID}}]' ) ) {
 	throw new RuntimeException( 'Der Medien-Speicherbutton unterstützt den WordPress-Platzhalter {{ID}} noch nicht.' );
 }
 
-if ( false === strpos( $script, '$button.closest( \'.attachment-details:visible\' )' ) ) {
-	throw new RuntimeException( 'Der Medien-Speicherbutton begrenzt die Feldsuche noch nicht auf den aktuell geöffneten Anhang.' );
+if ( false === strpos( $script, 'document.addEventListener( \'click\'' ) ) {
+	throw new RuntimeException( 'Der Medien-Speicherbutton muss ohne jQuery per Ereignisdelegation arbeiten.' );
 }
 
-if ( false === strpos( $script, '$button.closest( \'.media-modal:visible\' )' ) ) {
-	throw new RuntimeException( 'Die sichtbaren Anhang-Details im Divi-Medienmodal fehlen für den Medien-Speicherbutton.' );
+if ( false === strpos( $script, 'data-mgd-ail-ajax-url' ) || false === strpos( $script, 'data-mgd-ail-nonce' ) ) {
+	throw new RuntimeException( 'Der Medien-Speicherbutton muss seine AJAX-Daten direkt am Button lesen können.' );
 }
 
-if ( false === strpos( $script, '$button.closest( \'.media-frame-content:visible\' )' ) ) {
-	throw new RuntimeException( 'Die sichtbaren Anhang-Details im WordPress-Medienframe fehlen für den Medien-Speicherbutton.' );
-}
-
-if ( false === strpos( $script, '$scope.find( selector ).first()' ) ) {
-	throw new RuntimeException( 'Der Medien-Speicherbutton liest noch nicht das erste passende Feld innerhalb des aktuellen Anhangs.' );
+if ( false === strpos( $script, 'XMLHttpRequest' ) ) {
+	throw new RuntimeException( 'Der Medien-Speicherbutton braucht einen unabhängigen Browser-Transport ohne jQuery-Abhängigkeit.' );
 }
 
 echo "PASS: Der Medien-Speicherbutton liest ausschließlich Felder des aktuellen Anhangs.\n";

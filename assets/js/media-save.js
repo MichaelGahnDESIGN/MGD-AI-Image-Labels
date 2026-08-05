@@ -1,121 +1,174 @@
-/* global MGDAILMediaSave, jQuery */
 /**
- * Speichert die KI-Kennzeichnung im WordPress-Medien-Dialog bewusst erst nach
- * einem klaren Klick. Der Code verwendet ausschließlich WordPress-Admin-AJAX.
+ * Speichert die KI-Kennzeichnung aus WordPress- und Divi-5-Medienfenstern.
+ *
+ * Divi 5 rendert den Visual Builder in einem eigenen Iframe. Deshalb darf der
+ * Handler weder auf jQuery noch auf ein nur im äußeren Dokument verfügbares
+ * JavaScript-Objekt angewiesen sein. URL und Nonce liegen bewusst am bereits
+ * serverseitig gerenderten Button; der Server prüft beides zusätzlich.
  */
-( function( $ ) {
+( function() {
 	'use strict';
 
-	/**
-	 * Liest ein Auswahlfeld sicher aus dem aktuell geöffneten Medien-Dialog.
-	 *
-	 * In der WordPress-Mediathek werden die Anhangsfelder clientseitig erzeugt.
-	 * Dabei bleibt im name-Attribut je nach Ansicht der Platzhalter {{ID}}
-	 * stehen. Die konkrete ID wird ausschließlich für die gesicherte AJAX-Anfrage
-	 * verwendet; beim Auslesen akzeptieren wir beide von WordPress erzeugten
-	 * Feldvarianten. So bleibt der Button sowohl im Dialog als auch auf der
-	 * Detailansicht des Anhangs funktionsfähig.
-	 */
-	function getDialogScope( $button ) {
-		var $scope = $button.closest( '.attachment-details:visible' );
-		if ( ! $scope.length ) {
-			$scope = $button.closest( '.media-modal:visible' )
-				.find( '.attachment-details:visible' )
-				.last();
+	/** Prüft, ob ein DOM-Element sichtbar ist, ohne von jQuery abhängig zu sein. */
+	function isVisible( element ) {
+		return Boolean( element && ( element.offsetWidth || element.offsetHeight || element.getClientRects().length ) );
+	}
+
+	/** Gibt das aktive Detailpanel des aktuell bearbeiteten WordPress-Anhangs zurück. */
+	function getDialogScope( button ) {
+		var scope = button.closest( '.attachment-details' );
+
+		if ( scope && isVisible( scope ) ) {
+			return scope;
 		}
-		if ( ! $scope.length ) {
-			$scope = $button.closest( '.media-frame-content:visible' )
-				.find( '.attachment-details:visible' )
-				.last();
+
+		var modal = button.closest( '.media-modal, .media-frame-content' );
+		var panels = modal ? Array.prototype.slice.call( modal.querySelectorAll( '.attachment-details' ) ) : [];
+
+		for ( var index = panels.length - 1; index >= 0; index-- ) {
+			if ( isVisible( panels[ index ] ) ) {
+				return panels[ index ];
+			}
 		}
-		return $scope;
+
+		return null;
 	}
 
-	function readField( $scope, attachmentId, fieldName ) {
-		var selector = [
-			'[name="attachments[' + attachmentId + '][' + fieldName + ']" ]',
-			'[name="attachments[{{ID}}][' + fieldName + ']" ]'
-		].join( ',' );
+	/** Liest ein Feld aus dem aktiven Panel, auch wenn WordPress {{ID}} beibehält. */
+	function getField( scope, attachmentId, fieldName ) {
+		var concreteName = 'attachments[' + attachmentId + '][' + fieldName + ']';
+		var templateName = 'attachments[{{ID}}][' + fieldName + ']';
+		var fields = scope.querySelectorAll( '[name]' );
 
-		/*
-		 * Die Suche darf nicht das gesamte Medienfenster durchlaufen: WordPress
-		 * kann dort Felder zuvor geöffneter Anhänge im DOM behalten. .first()
-		 * bezieht sich deshalb ausschließlich auf das aktive Detailpanel.
-		 */
-		return $scope.find( selector ).first().val() || '';
+		for ( var index = 0; index < fields.length; index++ ) {
+			var fieldNameValue = fields[ index ].getAttribute( 'name' );
+
+			if ( concreteName === fieldNameValue || templateName === fieldNameValue ) {
+				return fields[ index ];
+			}
+		}
+
+		return null;
 	}
 
-	function writeField( $scope, attachmentId, fieldName, value ) {
-		var selector = [
-			'[name="attachments[' + attachmentId + '][' + fieldName + ']" ]',
-			'[name="attachments[{{ID}}][' + fieldName + ']" ]'
-		].join( ',' );
-
-		$scope.find( selector ).first().val( value ).trigger( 'change' );
-	}
-
-	function applySavedValues( $scope, attachmentId, values ) {
+	/** Schreibt die bestätigten Serverwerte zurück in den sichtbaren Dialog. */
+	function applySavedValues( scope, attachmentId, values ) {
 		if ( ! values ) {
 			return;
 		}
 
-		writeField( $scope, attachmentId, 'mgd_ail_status', values.mgd_ail_status || 'none' );
-		writeField( $scope, attachmentId, 'mgd_ail_position', values.mgd_ail_position || 'bottom-right' );
-		writeField( $scope, attachmentId, 'mgd_ail_theme', values.mgd_ail_theme || 'auto' );
-	}
-
-	/** Zeigt Erfolg oder Fehler im zugehörigen, zugänglichen Statusbereich. */
-	function setFeedback( $button, message, isError ) {
-		var $feedback = $button.siblings( '.mgd-ail-save-feedback' );
-		$feedback
-			.text( message )
-			.toggleClass( 'notice-error', Boolean( isError ) )
-			.toggleClass( 'notice-success', ! isError );
-	}
-
-	$( document ).on( 'click', '[data-mgd-ail-save]', function() {
-		var $button = $( this );
-		var attachmentId = Number( $button.data( 'mgd-ail-save' ) );
-		var $scope = getDialogScope( $button );
-		var values = {
-			status: readField( $scope, attachmentId, 'mgd_ail_status' ),
-			position: readField( $scope, attachmentId, 'mgd_ail_position' ),
-			theme: readField( $scope, attachmentId, 'mgd_ail_theme' )
+		var mapping = {
+			mgd_ail_status: values.mgd_ail_status || 'none',
+			mgd_ail_position: values.mgd_ail_position || 'bottom-right',
+			mgd_ail_theme: values.mgd_ail_theme || 'auto'
 		};
 
-		if ( ! attachmentId || ! window.MGDAILMediaSave || ! $scope.length ) {
-			setFeedback( $button, 'Der aktuelle Bild-Anhang konnte nicht bestimmt werden.', true );
+		Object.keys( mapping ).forEach( function( fieldName ) {
+			var field = getField( scope, attachmentId, fieldName );
+
+			if ( field ) {
+				field.value = mapping[ fieldName ];
+				field.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+			}
+		} );
+	}
+
+	/** Gibt direkt beim zugehörigen Button eine barrierefreie Rückmeldung aus. */
+	function setFeedback( button, message, isError ) {
+		var feedback = button.parentElement ? button.parentElement.querySelector( '.mgd-ail-save-feedback' ) : null;
+
+		if ( ! feedback ) {
 			return;
 		}
 
-		if ( ! values.status || ! values.position || ! values.theme ) {
-			setFeedback( $button, 'Die Kennzeichnungsfelder konnten nicht gelesen werden. Bitte schließe den Dialog und öffne das Bild erneut.', true );
-			return;
-		}
+		feedback.textContent = message;
+		feedback.classList.toggle( 'notice-error', Boolean( isError ) );
+		feedback.classList.toggle( 'notice-success', ! isError );
+	}
 
-		$button.prop( 'disabled', true );
-		setFeedback( $button, MGDAILMediaSave.savingText, false );
+	/** Sendet nur die drei whitelistenbasierten Werte an den geschützten AJAX-Endpunkt. */
+	function saveValues( button, values, onSuccess, onError ) {
+		var request = new XMLHttpRequest();
+		var payload = new URLSearchParams();
 
-		$.post( MGDAILMediaSave.ajaxUrl, {
-			action: 'mgd_ail_save_attachment',
-			nonce: MGDAILMediaSave.nonce,
-			attachment_id: attachmentId,
-			status: values.status,
-			position: values.position,
-			theme: values.theme
-		} ).done( function( response ) {
-			if ( response && response.success ) {
-				applySavedValues( $scope, attachmentId, response.data && response.data.values );
-				setFeedback( $button, response.data.message || MGDAILMediaSave.successText, false );
+		payload.set( 'action', 'mgd_ail_save_attachment' );
+		payload.set( 'nonce', button.getAttribute( 'data-mgd-ail-nonce' ) || '' );
+		payload.set( 'attachment_id', button.getAttribute( 'data-mgd-ail-save' ) || '' );
+		payload.set( 'status', values.status );
+		payload.set( 'position', values.position );
+		payload.set( 'theme', values.theme );
+
+		request.open( 'POST', button.getAttribute( 'data-mgd-ail-ajax-url' ) || '', true );
+		request.setRequestHeader( 'Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8' );
+		request.setRequestHeader( 'X-Requested-With', 'XMLHttpRequest' );
+		request.onreadystatechange = function() {
+			if ( 4 !== request.readyState ) {
 				return;
 			}
 
-			setFeedback( $button, ( response && response.data && response.data.message ) || MGDAILMediaSave.errorText, true );
-		} ).fail( function( response ) {
-			var message = response.responseJSON && response.responseJSON.data && response.responseJSON.data.message;
-			setFeedback( $button, message || MGDAILMediaSave.errorText, true );
-		} ).always( function() {
-			$button.prop( 'disabled', false );
-		} );
-	} );
-}( jQuery ) );
+			try {
+				var response = JSON.parse( request.responseText || '{}' );
+
+				if ( request.status >= 200 && request.status < 300 && response.success ) {
+					onSuccess( response );
+					return;
+				}
+
+				onError( response && response.data && response.data.message );
+			} catch ( error ) {
+				onError();
+			}
+		};
+		request.onerror = function() {
+			onError();
+		};
+		request.send( payload.toString() );
+	}
+
+	/**
+	 * Capture-Phase ist wichtig: Divi kann Medienmodal-Ereignisse in seiner
+	 * eigenen UI verarbeiten. Der lokale Speichern-Button wird daher zuverlässig
+	 * erkannt, ohne das restliche Divi-Verhalten zu verändern.
+	 */
+	document.addEventListener( 'click', function( event ) {
+		var target = event.target instanceof Element ? event.target : null;
+		var button = target ? target.closest( '[data-mgd-ail-save]' ) : null;
+
+		if ( ! button ) {
+			return;
+		}
+
+		event.preventDefault();
+
+		var attachmentId = Number( button.getAttribute( 'data-mgd-ail-save' ) );
+		var scope = getDialogScope( button );
+		var statusField = scope ? getField( scope, attachmentId, 'mgd_ail_status' ) : null;
+		var positionField = scope ? getField( scope, attachmentId, 'mgd_ail_position' ) : null;
+		var themeField = scope ? getField( scope, attachmentId, 'mgd_ail_theme' ) : null;
+
+		if ( ! attachmentId || ! scope || ! statusField || ! positionField || ! themeField || ! button.getAttribute( 'data-mgd-ail-ajax-url' ) || ! button.getAttribute( 'data-mgd-ail-nonce' ) ) {
+			setFeedback( button, 'Der aktuelle Bild-Anhang konnte nicht bestimmt werden. Bitte schließe den Dialog und öffne das Bild erneut.', true );
+			return;
+		}
+
+		button.disabled = true;
+		setFeedback( button, 'Speichere …', false );
+		saveValues(
+			button,
+			{
+				status: statusField.value,
+				position: positionField.value,
+				theme: themeField.value
+			},
+			function( response ) {
+				applySavedValues( scope, attachmentId, response.data && response.data.values );
+				setFeedback( button, ( response.data && response.data.message ) || 'Kennzeichnung gespeichert.', false );
+				button.disabled = false;
+			},
+			function( message ) {
+				setFeedback( button, message || 'Die Kennzeichnung konnte nicht gespeichert werden.', true );
+				button.disabled = false;
+			}
+		);
+	}, true );
+}() );

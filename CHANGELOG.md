@@ -2,6 +2,18 @@
 
 Alle wesentlichen Änderungen werden in diesem Dokument festgehalten. Versionen folgen dem Format `MAJOR.MINOR.PATCH`.
 
+## 0.6.1 – 5. August 2026
+
+### Behoben
+
+- Die Speichern-Funktion wird nun auch im separaten Laufzeitfenster des Divi-5-Builders geladen. Zuvor war der Button sichtbar, aber der zugehörige Browser-Handler stand in diesem Fenster nicht zur Verfügung.
+- Die Medien-Speicherung arbeitet ohne jQuery-Abhängigkeit und ermittelt Status, Position und Glas-Variante ausschließlich innerhalb des aktuell sichtbaren Anhang-Dialogs.
+- Der Speichern-Klick wird im Divi-Dialog früh abgefangen, damit ihn keine Builder- oder Medienbibliotheks-Interaktion überlagert.
+
+### Prüfbarkeit
+
+- Ein eigener Regressionstest stellt sicher, dass der Speichern-Handler bei `?et_fb=1` sowohl im Divi-Editor als auch im zugehörigen App-Fenster ausgeliefert wird.
+
 ## 0.6.0 – 5. August 2026
 
 ### Neu
