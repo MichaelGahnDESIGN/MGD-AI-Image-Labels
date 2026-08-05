@@ -21,6 +21,17 @@ require_once dirname( __DIR__ ) . '/includes/class-attachment-meta.php';
 $GLOBALS['mgd_ail_test_capabilities'] = array();
 $GLOBALS['mgd_ail_test_meta_writes']  = array();
 $GLOBALS['mgd_ail_test_mime_type']    = 'image/jpeg';
+$GLOBALS['mgd_ail_test_meta_values']  = array();
+$GLOBALS['mgd_ail_test_display_options'] = array(
+	'font_size' => '6',
+	'offset'    => '12',
+	'padding_y' => '5',
+	'padding_x' => '9',
+	'radius'    => '999',
+	'blur'      => '10',
+	'theme'     => 'dark',
+	'position'  => 'top-left',
+);
 
 function current_user_can( string $capability, ...$arguments ): bool {
 	$attachment_id = isset( $arguments[0] ) ? (int) $arguments[0] : 0;
@@ -39,9 +50,15 @@ function update_post_meta( int $attachment_id, string $key, string $value ): voi
 }
 
 function get_post_meta( int $attachment_id, string $key, bool $single ): string {
-	return '';
+	return (string) ( $GLOBALS['mgd_ail_test_meta_values'][ $attachment_id ][ $key ] ?? '' );
 }
 
+/** @return array<string, string> */
+function get_option( string $option, $default = false ): array {
+	return 'mgd_ail_display_options' === $option ? $GLOBALS['mgd_ail_test_display_options'] : ( is_array( $default ) ? $default : array() );
+}
+
+require_once dirname( __DIR__ ) . '/includes/class-plugin-options.php';
 require_once dirname( __DIR__ ) . '/includes/class-media-fields.php';
 
 /** @param mixed $actual @param mixed $expected */
@@ -79,6 +96,28 @@ mgd_ail_assert_allowed_values(
 mgd_ail_assert_same( 'none', MGD_AI_Image_Labels_Attachment_Meta::sanitize_status( 'unbekannt' ), 'Ungültiger Status erhält keinen sicheren Rückfallwert.' );
 mgd_ail_assert_same( 'bottom-right', MGD_AI_Image_Labels_Attachment_Meta::sanitize_position( '<script>top-left</script>' ), 'Ungültige Position erhält keinen sicheren Rückfallwert.' );
 mgd_ail_assert_same( 'auto', MGD_AI_Image_Labels_Attachment_Meta::sanitize_theme( array( 'dark' ) ), 'Ungültige Glas-Variante erhält keinen sicheren Rückfallwert.' );
+
+// Fehlen bei einem älteren Bild individuelle Darstellungswerte, müssen die
+// zentral konfigurierten Standards greifen. So wirkt sich die Verwaltungsseite
+// nicht nur in ihrer Vorschau, sondern auch in der echten Frontend-Ausgabe aus.
+$GLOBALS['mgd_ail_test_meta_values'][77] = array(
+	MGD_AI_Image_Labels_Attachment_Meta::STATUS_KEY => 'generated',
+);
+$inherited_values = MGD_AI_Image_Labels_Attachment_Meta::get_values( 77 );
+mgd_ail_assert_same( 'top-left', $inherited_values['position'], 'Fehlende Einzelposition übernimmt den global validierten Standard.' );
+mgd_ail_assert_same( 'dark', $inherited_values['theme'], 'Fehlende Einzel-Glasvariante übernimmt den global validierten Standard.' );
+
+// Ein ausdrücklich gespeicherter Bildwert bleibt immer vorrangig, damit
+// Redaktionen jedes Motiv unabhängig von der globalen Ausgangsgestaltung
+// positionieren und kontraststark darstellen können.
+$GLOBALS['mgd_ail_test_meta_values'][78] = array(
+	MGD_AI_Image_Labels_Attachment_Meta::STATUS_KEY   => 'generated',
+	MGD_AI_Image_Labels_Attachment_Meta::POSITION_KEY => 'bottom-left',
+	MGD_AI_Image_Labels_Attachment_Meta::THEME_KEY    => 'light',
+);
+$individual_values = MGD_AI_Image_Labels_Attachment_Meta::get_values( 78 );
+mgd_ail_assert_same( 'bottom-left', $individual_values['position'], 'Eine gespeicherte Einzelposition hat Vorrang vor dem globalen Standard.' );
+mgd_ail_assert_same( 'light', $individual_values['theme'], 'Eine gespeicherte Einzel-Glasvariante hat Vorrang vor dem globalen Standard.' );
 
 // Sicherheitsfall: Eine allgemeine Upload-Berechtigung reicht nicht aus. Die
 // Person muss das konkrete Bild auch mit edit_post bearbeiten dürfen.

@@ -61,13 +61,55 @@ final class MGD_AI_Image_Labels_Attachment_Meta {
 	/**
 	 * Liest die drei Werte stets mit sicheren Standardwerten.
 	 *
+	 * Position und Glas-Variante eines bereits redaktionell bearbeiteten Bildes
+	 * haben immer Vorrang. Bei älteren oder noch nicht vollständig gepflegten
+	 * Anhängen fehlen diese Metadaten jedoch häufig. Dann werden die zentralen,
+	 * ebenfalls validierten Standards aus der Plugin-Verwaltung verwendet.
+	 *
 	 * @return array{status: string, position: string, theme: string}
 	 */
 	public static function get_values( int $attachment_id ): array {
+		$display_options = self::get_display_options();
+
 		return array(
 			'status'   => self::sanitize_status( get_post_meta( $attachment_id, self::STATUS_KEY, true ) ),
-			'position' => self::sanitize_position( get_post_meta( $attachment_id, self::POSITION_KEY, true ) ),
-			'theme'    => self::sanitize_theme( get_post_meta( $attachment_id, self::THEME_KEY, true ) ),
+			'position' => self::sanitize_from_list(
+				get_post_meta( $attachment_id, self::POSITION_KEY, true ),
+				self::POSITIONS,
+				$display_options['position']
+			),
+			'theme'    => self::sanitize_from_list(
+				get_post_meta( $attachment_id, self::THEME_KEY, true ),
+				self::THEMES,
+				$display_options['theme']
+			),
+		);
+	}
+
+	/**
+	 * Liest die globalen Vorgaben, ohne isolierte Integrations- oder
+	 * Migrationstests von der später geladenen Optionsklasse abhängig zu machen.
+	 *
+	 * Im regulären Plugin-Boot wird die Optionsklasse immer vor einem Aufruf von
+	 * `get_values()` geladen. Der konservative Fallback schützt dennoch gegen
+	 * ungewöhnliche Aufrufreihenfolgen und entspricht den Standardwerten der
+	 * Optionsklasse.
+	 *
+	 * @return array{position: string, theme: string}
+	 */
+	private static function get_display_options(): array {
+		if ( class_exists( 'MGD_AI_Image_Labels_Plugin_Options' ) ) {
+			$options = MGD_AI_Image_Labels_Plugin_Options::get_options();
+
+			return array(
+				'position' => self::sanitize_position( $options['position'] ?? 'bottom-right' ),
+				'theme'    => self::sanitize_theme( $options['theme'] ?? 'auto' ),
+			);
+		}
+
+		return array(
+			'position' => 'bottom-right',
+			'theme'    => 'auto',
 		);
 	}
 
