@@ -289,6 +289,38 @@ final class MGD_AI_Image_Labels_Image_Renderer {
 	}
 
 	/**
+	 * Erzeugt ausschließlich das Badge eines gekennzeichneten Anhangs.
+	 *
+	 * Diese öffentliche Schnittstelle ist für Ausgaben gedacht, bei denen das
+	 * eigentliche Bild bereits als CSS-Hintergrund eines bestehenden Containers
+	 * eingebunden ist. Sie verändert und umschließt deshalb weder ein Bild noch
+	 * anderes Layout-HTML. Der Kennzeichnungsstatus stammt immer aus den sicher
+	 * gelesenen Anhangsmetadaten und kann nicht überschrieben werden.
+	 *
+	 * @param int                  $attachment_id Positive WordPress-Anhangs-ID.
+	 * @param array<string, mixed> $overrides Optionale Ausgabevarianten für Position und Theme.
+	 */
+	public static function render_label_only( int $attachment_id, array $overrides ): string {
+		if ( $attachment_id <= 0 ) {
+			return '';
+		}
+
+		$values = MGD_AI_Image_Labels_Attachment_Meta::get_values( $attachment_id );
+
+		/* Nur reine Darstellungswerte dürfen lokal abweichen. Der Status bleibt
+		 * unveränderlich an die redaktionell geprüfte Bild-ID gebunden. */
+		if ( array_key_exists( 'position', $overrides ) ) {
+			$values['position'] = $overrides['position'];
+		}
+
+		if ( array_key_exists( 'theme', $overrides ) ) {
+			$values['theme'] = $overrides['theme'];
+		}
+
+		return self::render_badge_html( $values );
+	}
+
+	/**
 	 * Erzeugt die isolierte, testbare Ausgabe eines Badges.
 	 *
 	 * Das übergebene Bild-HTML bleibt wortgleich enthalten. Der Alt-Text wird
@@ -297,10 +329,33 @@ final class MGD_AI_Image_Labels_Image_Renderer {
 	 * @param array<string, mixed> $values Ungeprüfte, bereits gelesene Metadaten.
 	 */
 	public static function render_badge( string $image_html, array $values ): string {
+		if ( '' === $image_html ) {
+			return $image_html;
+		}
+
+		$badge_html = self::render_badge_html( $values );
+
+		if ( '' === $badge_html ) {
+			return $image_html;
+		}
+
+		return '<span class="mgd-ail-image-wrapper">' . $image_html . $badge_html . '</span>';
+	}
+
+	/**
+	 * Baut die gemeinsame, bereits vollständig escapte Badge-Ausgabe.
+	 *
+	 * Bildfilter und Hintergrund-Shortcode verwenden bewusst dieselbe Methode.
+	 * Sichtbarer Labeltext und Deepfake-Hinweis existieren dadurch nur an einem
+	 * Ort und können bei späteren Textänderungen nicht auseinanderlaufen.
+	 *
+	 * @param array<string, mixed> $values Ungeprüfte Metadaten oder Ausgabevarianten.
+	 */
+	private static function render_badge_html( array $values ): string {
 		$status = self::sanitize_status( $values['status'] ?? 'none' );
 
-		if ( 'none' === $status || '' === $image_html ) {
-			return $image_html;
+		if ( 'none' === $status ) {
+			return '';
 		}
 
 		$position = self::sanitize_value(
@@ -315,8 +370,7 @@ final class MGD_AI_Image_Labels_Image_Renderer {
 			: '';
 
 		return sprintf(
-			'<span class="mgd-ail-image-wrapper">%1$s<span class="mgd-ail-badge mgd-ail-position-%2$s mgd-ail-theme-%3$s" role="note"><span class="mgd-ail-badge__text">%4$s</span>%5$s</span></span>',
-			$image_html,
+			'<span class="mgd-ail-badge mgd-ail-position-%1$s mgd-ail-theme-%2$s" role="note"><span class="mgd-ail-badge__text">%3$s</span>%4$s</span>',
 			self::escape_class( $position ),
 			self::escape_class( $theme ),
 			self::escape_text( $label ),
