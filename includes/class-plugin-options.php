@@ -90,10 +90,14 @@ final class MGD_AI_Image_Labels_Plugin_Options {
 	 * Zahlen mit Einheiten, Vorzeichen, Dezimalstellen oder zusätzlichem Text
 	 * gelten bewusst als ungültig und fallen auf den jeweiligen Standard zurück.
 	 *
-	 * @param array<string, mixed> $input Ungeprüfte Eingabe aus WordPress.
+	 * @param mixed $input Ungeprüfte Eingabe aus WordPress.
 	 * @return array<string, string> Vollständige, sicher normalisierte Optionen.
 	 */
-	public static function sanitize_options( array $input ): array {
+	public static function sanitize_options( $input ): array {
+		if ( ! is_array( $input ) ) {
+			$input = array();
+		}
+
 		$defaults = self::get_defaults();
 
 		return array(

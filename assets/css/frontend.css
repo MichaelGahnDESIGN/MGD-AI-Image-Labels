@@ -18,13 +18,32 @@
 	max-width: 100%;
 }
 
+/* Ein Hintergrundbild bleibt vollständig Aufgabe des umgebenden Divi-Moduls.
+ * Diese Hülle stellt ausschließlich den lokalen Bezugspunkt für das Badge. */
+.mgd-ail-background-label {
+	position: relative;
+	display: block;
+}
+
+/* Die individuellen Offsets gelten nur innerhalb des Shortcodes. Normale
+ * WordPress- und Divi-Bildwrapper behalten dadurch ihre bisherige Position. */
+.mgd-ail-background-label .mgd-ail-badge {
+	transform: translate(
+		var(--mgd-ail-offset-x, 0),
+		var(--mgd-ail-offset-y, 0)
+	);
+}
+
 .mgd-ail-badge {
 	position: absolute;
 	z-index: 2;
 	display: inline-flex;
 	align-items: center;
 	min-height: 28px;
-	max-width: calc(100% - 24px);
+	/* Beide Seiten reservieren den konfigurierbaren Abstand, damit große
+	 * Offsets das Badge nicht über den Bildrand hinausschieben. */
+	max-width: calc(100% - var(--mgd-ail-offset, 12px) - var(--mgd-ail-offset, 12px));
+	box-sizing: border-box;
 	padding: var(--mgd-ail-padding-y, 5px) var(--mgd-ail-padding-x, 9px);
 	border: 1px solid rgba(255, 255, 255, 0.72);
 	border-radius: var(--mgd-ail-radius, 999px);

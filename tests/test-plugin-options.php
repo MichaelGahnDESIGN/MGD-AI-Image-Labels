@@ -86,6 +86,9 @@ mgd_ail_options_assert_same( '6', $unsafe['font_size'], 'Eine ungültige Schrift
 mgd_ail_options_assert_same( '12', $unsafe['offset'], 'Ein negativer Abstand fällt auf den sicheren Standard zurück.' );
 mgd_ail_options_assert_same( '999', $unsafe['radius'], 'Ein nicht numerischer Radius fällt auf den sicheren Standard zurück.' );
 
+$scalar = MGD_AI_Image_Labels_Plugin_Options::sanitize_options( 'kein-options-array' );
+mgd_ail_options_assert_same( MGD_AI_Image_Labels_Plugin_Options::get_defaults(), $scalar, 'Skalare WordPress-Optionswerte werden ohne TypeError vollständig auf sichere Standards zurückgesetzt.' );
+
 $valid = MGD_AI_Image_Labels_Plugin_Options::sanitize_options(
 	array(
 		'font_size' => 24,
@@ -162,6 +165,8 @@ if ( false === $frontend_css ) {
 }
 
 mgd_ail_options_assert_contains( 'padding: var(--mgd-ail-padding-y, 5px) var(--mgd-ail-padding-x, 9px);', $frontend_css, 'Das Badge verwendet globale Innenabstände mit sicheren Fallbacks.' );
+mgd_ail_options_assert_contains( 'box-sizing: border-box;', $frontend_css, 'Padding und Rahmen bleiben innerhalb der dynamisch berechneten Badge-Breite.' );
+mgd_ail_options_assert_contains( 'max-width: calc(100% - var(--mgd-ail-offset, 12px) - var(--mgd-ail-offset, 12px));', $frontend_css, 'Die Badge-Breite reserviert bei jeder Position beide konfigurierbaren Außenabstände.' );
 mgd_ail_options_assert_contains( 'border-radius: var(--mgd-ail-radius, 999px);', $frontend_css, 'Das Badge verwendet den globalen Radius mit sicherem Fallback.' );
 mgd_ail_options_assert_contains( 'font-size: var(--mgd-ail-font-size, 6px);', $frontend_css, 'Das Badge verwendet die globale Schriftgröße mit sicherem Fallback.' );
 mgd_ail_options_assert_contains( '.mgd-ail-position-top-left { top: var(--mgd-ail-offset, 12px); left: var(--mgd-ail-offset, 12px); }', $frontend_css, 'Die obere linke Pro-Bild-Position verwendet den globalen Abstand.' );
