@@ -60,7 +60,7 @@ final class MGD_AI_Image_Labels_AI_Philosophy {
 	/**
 	 * Entfernt aktive und nicht benötigte HTML-Elemente vor der Speicherung.
 	 *
-	 * Links bleiben nur mit href, title, target und rel erhalten. So können
+	 * Links bleiben nur mit href, title und rel erhalten. So können
 	 * Redaktionsteams Quellen nennen, ohne Skripte, Inline-Stile, Formulare oder
 	 * eingebettete Fremdinhalte zu erlauben.
 	 */
@@ -84,7 +84,6 @@ final class MGD_AI_Image_Labels_AI_Philosophy {
 				'a'      => array(
 					'href'   => true,
 					'title'  => true,
-					'target' => true,
 					'rel'    => true,
 				),
 			)
@@ -227,7 +226,6 @@ final class MGD_AI_Image_Labels_AI_Philosophy {
 			}
 		}
 
-		$candidates = array_values( array_unique( $candidates ) );
 		if ( 1 !== count( $candidates ) ) {
 			return 'manual';
 		}

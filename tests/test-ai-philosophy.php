@@ -45,7 +45,9 @@ function update_option( string $name, $value ): bool {
 }
 
 function wp_kses( string $content, array $allowed_html ): string {
-	return strip_tags( $content, '<p><h2><h3><h4><ul><ol><li><strong><em><a><br>' );
+	$content = strip_tags( $content, '<p><h2><h3><h4><ul><ol><li><strong><em><a><br>' );
+
+	return preg_replace( '/\\s+target=("[^"]*"|\'[^\']*\'|[^\\s>]+)/i', '', $content ) ?? '';
 }
 
 function wpautop( string $content ): string {
@@ -164,6 +166,7 @@ $content = MGD_AI_Image_Labels_AI_Philosophy::render_shortcode();
 mgd_ail_philosophy_assert_contains( 'verantwortungsvoll', $content, 'Der Standardtext erklärt einen verantwortungsvollen KI-Einsatz.' );
 mgd_ail_philosophy_assert_same( '', MGD_AI_Image_Labels_AI_Philosophy::sanitize_content( '<script>alert(1)</script>' ), 'Unsicheres Script-Markup wird nicht gespeichert.' );
 mgd_ail_philosophy_assert_contains( '<strong>Transparenz</strong>', MGD_AI_Image_Labels_AI_Philosophy::sanitize_content( '<strong>Transparenz</strong><iframe>weg</iframe>' ), 'Erlaubte Betonungen bleiben erhalten.' );
+mgd_ail_philosophy_assert_same( false, false !== strpos( MGD_AI_Image_Labels_AI_Philosophy::sanitize_content( '<a href="https://example.test" target="_blank">Quelle</a>' ), 'target=' ), 'Links dürfen keine neuen Tabs ohne sichere Tabnabbing-Schutzregeln öffnen.' );
 
 $created = MGD_AI_Image_Labels_AI_Philosophy::create_page();
 mgd_ail_philosophy_assert_same( 100, $created['page_id'], 'Beim ersten Aufruf wird eine einzige Philosophie-Seite angelegt.' );
@@ -181,6 +184,12 @@ $GLOBALS['mgd_ail_philosophy_test']['updated_items']  = array();
 $multi_footer = MGD_AI_Image_Labels_AI_Philosophy::create_page();
 mgd_ail_philosophy_assert_same( 0, count( $GLOBALS['mgd_ail_philosophy_test']['updated_items'] ), 'Mehrere Footer-Menüs werden nie automatisch verändert.' );
 mgd_ail_philosophy_assert_contains( 'manuell', $multi_footer['notice'], 'Mehrdeutige Footer-Zuordnungen geben einen klaren manuellen Hinweis.' );
+
+$GLOBALS['mgd_ail_philosophy_test']['menu_locations'] = array( 'footer_navigation' => 9, 'footer_secondary' => 9 );
+$GLOBALS['mgd_ail_philosophy_test']['updated_items']  = array();
+$same_menu_twice = MGD_AI_Image_Labels_AI_Philosophy::create_page();
+mgd_ail_philosophy_assert_same( 0, count( $GLOBALS['mgd_ail_philosophy_test']['updated_items'] ), 'Zwei Footer-Positionen mit demselben Menü bleiben ebenfalls vollständig unangetastet.' );
+mgd_ail_philosophy_assert_contains( 'manuell', $same_menu_twice['notice'], 'Auch bei demselben Menü bleibt die doppelte Footer-Position eindeutig manuell.' );
 
 $GLOBALS['mgd_ail_philosophy_test']['menu_locations'] = array( 'footer_navigation' => 9 );
 $GLOBALS['mgd_ail_philosophy_test']['updated_items']  = array();
