@@ -153,5 +153,14 @@ mgd_ail_shortcode_assert_contains( '.mgd-ail-background-label {', $frontend_css,
 mgd_ail_shortcode_assert_contains( 'position: absolute;', $frontend_css, 'Die Hülle wird als Overlay innerhalb des Hintergrund-Containers positioniert.' );
 mgd_ail_shortcode_assert_contains( '.mgd-ail-background-label .mgd-ail-badge', $frontend_css, 'Offset-Transformationen bleiben auf Shortcode-Badges begrenzt.' );
 mgd_ail_shortcode_assert_contains( 'inset: 0;', $frontend_css, 'Die leere Shortcode-Hülle überlagert die Fläche des Hintergrund-Containers vollständig.' );
+mgd_ail_shortcode_assert_contains( '.mgd-ail-background-container {', $frontend_css, 'Der Hintergrund-Container erhält eine dokumentierte Helper-Klasse.' );
+mgd_ail_shortcode_assert_contains( ".mgd-ail-background-container {\n\tposition: relative;", $frontend_css, 'Die Helper-Klasse erzeugt den sicheren Bezugskontext für das Overlay.' );
+
+$readme = file_get_contents( dirname( __DIR__ ) . '/README.md' );
+if ( false === $readme ) {
+	throw new RuntimeException( 'Die Redaktionsanleitung konnte nicht gelesen werden.' );
+}
+mgd_ail_shortcode_assert_contains( 'mgd-ail-background-container', $readme, 'Die Anleitung benennt die erforderliche Klasse des Divi-Hintergrund-Containers.' );
+mgd_ail_shortcode_assert_contains( '[mgd_ai_label image_id="55"]', $readme, 'Die Anleitung enthält ein vollständiges Shortcode-Beispiel.' );
 
 echo "PASS: Hintergrundbild-Shortcodes geben ausschließlich sichere KI-Badges aus.\n";

@@ -58,6 +58,32 @@ Das Badge ist bewusst klein und dezent. Position, helle/dunkle Glasoptik und ein
 
 Die Styles liegen vollständig lokal in `assets/css/frontend.css` und können in einem Child Theme gezielt überschrieben werden.
 
+## Hintergrundbild mit Divi kennzeichnen
+
+Für ein Divi-Modul mit CSS-Hintergrundbild gehört die CSS-Klasse
+`mgd-ail-background-container` direkt auf den Container mit dem Hintergrundbild
+(in Divi unter **Erweitert → CSS-ID & Klassen**). Die Klasse schafft den
+notwendigen Bezugskontext für das Label; sie verändert weder das Hintergrundbild
+noch das Layout des Containers.
+
+Füge anschließend innerhalb dieses Containers ein Text- oder Code-Modul mit dem
+Shortcode ein:
+
+```text
+[mgd_ai_label image_id="55"]
+```
+
+`55` ersetzt du durch die WordPress-Mediathek-ID des bereits gekennzeichneten
+Bildes. Optional sind bis zu drei eigene Klassen sowie ganzzahlige Offsets von
+`0` bis `192` Pixeln erlaubt, zum Beispiel:
+
+```text
+[mgd_ai_label image_id="55" class="hero-bild" offset_x="24" offset_y="12"]
+```
+
+Ohne gültige Bild-ID, bei einem Status **Keine KI** oder bei ungültigen
+Attributen gibt der Shortcode bewusst nichts aus.
+
 ## Plugin-Verwaltung im Backend
 
 In der WordPress-Pluginliste zeigt **Details anzeigen** eine eigene, native WordPress-Detailansicht. Sie bleibt auch verfügbar, wenn GitHub gerade nicht erreichbar ist. Die Ansicht erklärt Installation, Bedienung, häufige Fragen und die Änderungen der letzten Versionen.

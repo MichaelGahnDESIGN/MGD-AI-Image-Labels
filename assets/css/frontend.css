@@ -18,6 +18,13 @@
 	max-width: 100%;
 }
 
+/* Diese Klasse gehört direkt auf den Divi-Container mit Hintergrundbild.
+ * Sie schafft bewusst den Bezugskontext für das Label-Overlay; ein Child kann
+ * die Position seines Eltern-Containers technisch nicht selbst absichern. */
+.mgd-ail-background-container {
+	position: relative;
+}
+
 /* Ein Hintergrundbild bleibt vollständig Aufgabe des umgebenden Divi-Moduls.
  * Die leere Hülle überzieht dessen bereits positionierte Fläche vollständig und
  * stellt dadurch auch ohne eigenen Textinhalt einen verlässlichen Bezugspunkt
