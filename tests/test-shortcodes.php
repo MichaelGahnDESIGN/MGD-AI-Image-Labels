@@ -153,6 +153,7 @@ mgd_ail_shortcode_assert_contains( '.mgd-ail-background-label {', $frontend_css,
 mgd_ail_shortcode_assert_contains( 'position: absolute;', $frontend_css, 'Die Hülle wird als Overlay innerhalb des Hintergrund-Containers positioniert.' );
 mgd_ail_shortcode_assert_contains( '.mgd-ail-background-label .mgd-ail-badge', $frontend_css, 'Offset-Transformationen bleiben auf Shortcode-Badges begrenzt.' );
 mgd_ail_shortcode_assert_contains( 'inset: 0;', $frontend_css, 'Die leere Shortcode-Hülle überlagert die Fläche des Hintergrund-Containers vollständig.' );
+mgd_ail_shortcode_assert_contains( ".mgd-ail-background-label {\n\tposition: absolute;\n\tinset: 0;\n\tdisplay: block;\n\tpointer-events: none;", $frontend_css, 'Das unsichtbare Overlay lässt Links, Buttons und Formulare des Containers durch.' );
 mgd_ail_shortcode_assert_contains( '.mgd-ail-background-container {', $frontend_css, 'Der Hintergrund-Container erhält eine dokumentierte Helper-Klasse.' );
 mgd_ail_shortcode_assert_contains( ".mgd-ail-background-container {\n\tposition: relative;", $frontend_css, 'Die Helper-Klasse erzeugt den sicheren Bezugskontext für das Overlay.' );
 

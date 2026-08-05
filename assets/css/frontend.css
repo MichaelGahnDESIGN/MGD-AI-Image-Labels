@@ -28,11 +28,13 @@
 /* Ein Hintergrundbild bleibt vollständig Aufgabe des umgebenden Divi-Moduls.
  * Die leere Hülle überzieht dessen bereits positionierte Fläche vollständig und
  * stellt dadurch auch ohne eigenen Textinhalt einen verlässlichen Bezugspunkt
- * für das absolut platzierte Badge bereit. */
+ * für das absolut platzierte Badge bereit. Sie darf dabei keine Links, Buttons
+ * oder Formulare des umgebenden Divi-Containers verdecken oder Klicks abfangen. */
 .mgd-ail-background-label {
 	position: absolute;
 	inset: 0;
 	display: block;
+	pointer-events: none;
 }
 
 /* Die individuellen Offsets gelten nur innerhalb des Shortcodes. Normale
