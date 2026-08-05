@@ -75,12 +75,23 @@ mgd_ail_updater_assert_same( 'https://example.test/wp-content/plugins/mgd-ai-ima
 mgd_ail_updater_assert_same( 'https://example.test/wp-content/plugins/mgd-ai-image-labels/assets/branding/banner-772x250.png', $update->banners['low'], 'Das WordPress-Update-Objekt liefert das lokale Banner für die Detailansicht.' );
 mgd_ail_updater_assert_same( null, MGD_AI_Image_Labels_GitHub_Updater::build_update( $release, '0.5.1', 'mgd-ai-image-labels/mgd-ai-image-labels.php' ), 'Die bereits installierte Version erzeugt keinen Update-Hinweis.' );
 
+mgd_ail_updater_assert_same(
+	true,
+	MGD_AI_Image_Labels_GitHub_Updater::should_refresh_cached_release( array( 'version' => '0.6.0' ), '0.6.0' ),
+	'Ein Cache mit genau der installierten Version darf einen neuen GitHub-Release nicht zwölf Stunden lang verdecken.'
+);
+mgd_ail_updater_assert_same(
+	false,
+	MGD_AI_Image_Labels_GitHub_Updater::should_refresh_cached_release( array( 'version' => '0.6.2' ), '0.6.0' ),
+	'Ein bereits neuer und valider Release darf weiterhin aus dem Cache verwendet werden.'
+);
+
 $plugin_source = file_get_contents( dirname( __DIR__ ) . '/mgd-ai-image-labels.php' );
 if ( false === $plugin_source ) {
 	throw new RuntimeException( 'Die Hauptdatei des Plugins konnte nicht gelesen werden.' );
 }
-mgd_ail_updater_assert_contains( 'Version:            0.6.1', $plugin_source, 'Die Plugin-Metadaten enthalten die veröffentlichte Release-Version 0.6.1.' );
+mgd_ail_updater_assert_contains( 'Version:            0.6.2', $plugin_source, 'Die Plugin-Metadaten enthalten die veröffentlichte Release-Version 0.6.2.' );
 mgd_ail_updater_assert_contains( 'Update URI:         https://github.com/MichaelGahnDESIGN/MGD-AI-Image-Labels', $plugin_source, 'Die Plugin-Metadaten benennen die eindeutige öffentliche Update-Quelle.' );
-mgd_ail_updater_assert_contains( "define( 'MGD_AI_IMAGE_LABELS_VERSION', '0.6.1' );", $plugin_source, 'Die Laufzeit-Konstante entspricht der Plugin-Version.' );
+mgd_ail_updater_assert_contains( "define( 'MGD_AI_IMAGE_LABELS_VERSION', '0.6.2' );", $plugin_source, 'Die Laufzeit-Konstante entspricht der Plugin-Version.' );
 
 echo "PASS: Öffentliche GitHub-Releases werden sicher normalisiert.\n";

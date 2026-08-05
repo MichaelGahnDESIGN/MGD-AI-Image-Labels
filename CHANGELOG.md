@@ -2,6 +2,13 @@
 
 Alle wesentlichen Änderungen werden in diesem Dokument festgehalten. Versionen folgen dem Format `MAJOR.MINOR.PATCH`.
 
+## 0.6.2 – 5. August 2026
+
+### Behoben
+
+- Der GitHub-Updater verwirft nun einen eigenen Release-Cache, sobald dieser nur die installierte oder eine ältere Version enthält. Dadurch blockiert ein kurz vor einer Veröffentlichung gespeicherter Cache keinen neuen Release mehr.
+- Bereits als neuer erkannte Releases bleiben weiterhin kurz zwischengespeichert; GitHub wird nicht bei jedem Seitenaufruf angefragt.
+
 ## 0.6.1 – 5. August 2026
 
 ### Behoben

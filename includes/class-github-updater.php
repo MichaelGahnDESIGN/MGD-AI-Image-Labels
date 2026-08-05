@@ -116,6 +116,26 @@ final class MGD_AI_Image_Labels_GitHub_Updater {
 	}
 
 	/**
+	 * Entscheidet, ob ein lokaler Release-Cache erneut bei GitHub geprüft wird.
+	 *
+	 * Ein Cache mit der aktuell installierten (oder einer älteren) Version kann
+	 * direkt vor der Veröffentlichung eines neuen Releases entstanden sein. Er
+	 * darf den normalen WordPress-Check nicht bis zum Ablauf der Cachezeit
+	 * blockieren. Nur ein bereits nachweislich neuer Release bleibt deshalb
+	 * während der kurzen Cachezeit wiederverwendbar.
+	 *
+	 * @param array<string, mixed> $cached  Bereits normalisierte Cache-Daten.
+	 * @param string               $current Lokal installierte Plugin-Version.
+	 */
+	public static function should_refresh_cached_release( array $cached, string $current ): bool {
+		$cached_version = $cached['version'] ?? '';
+
+		return ! is_string( $cached_version )
+			|| '' === $cached_version
+			|| ! version_compare( $cached_version, $current, '>' );
+	}
+
+	/**
 	 * Ergänzt WordPress nur dann um ein Update, wenn ein verifizierter Release
 	 * wirklich neuer als die lokal installierte Version ist.
 	 *
@@ -236,7 +256,7 @@ final class MGD_AI_Image_Labels_GitHub_Updater {
 	private static function get_latest_release(): array {
 		$cached = get_site_transient( self::CACHE_KEY );
 
-		if ( is_array( $cached ) ) {
+		if ( is_array( $cached ) && ! self::should_refresh_cached_release( $cached, MGD_AI_IMAGE_LABELS_VERSION ) ) {
 			return $cached;
 		}
 
