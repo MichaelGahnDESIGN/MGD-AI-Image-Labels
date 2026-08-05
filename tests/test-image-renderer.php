@@ -34,6 +34,60 @@ function get_post_meta( int $attachment_id, string $key, bool $single = true ): 
 	return is_string( $values[ $key ] ?? null ) ? $values[ $key ] : '';
 }
 
+/**
+ * Simuliert die von WordPress gelieferte Liste aktiv gekennzeichneter Medien.
+ * Der Frontend-Fallback darf daraus ausschließlich bereits redaktionell
+ * freigegebene Anhangs-IDs beziehen.
+ *
+ * @param array<string, mixed> $arguments Nicht ausgewertete WordPress-Abfrage.
+ * @return array<int, int>
+ */
+function get_posts( array $arguments ): array {
+	return array( 55 );
+}
+
+/**
+ * Liefert die kanonische Original-URL des Testanhangs.
+ */
+function wp_get_attachment_url( int $attachment_id ): string {
+	return 'https://beispiel.test/wp-content/uploads/2026/03/schreibmaschine.jpg';
+}
+
+/**
+ * Simuliert die WordPress-Metadaten inklusive einer automatisch erzeugten
+ * Größenvariante. Genau diese Variante erscheint später im Beitragsbild.
+ *
+ * @return array<string, mixed>
+ */
+function wp_get_attachment_metadata( int $attachment_id ): array {
+	return array(
+		'file'  => '2026/03/schreibmaschine.jpg',
+		'sizes' => array(
+			'large' => array(
+				'file' => 'schreibmaschine-980x551.jpg',
+			),
+		),
+	);
+}
+
+/**
+ * Stellt die lokale Upload-Basis der Testseite bereit.
+ *
+ * @return array<string, string>
+ */
+function wp_upload_dir(): array {
+	return array( 'baseurl' => 'https://beispiel.test/wp-content/uploads' );
+}
+
+/**
+ * Nutzt im Test dieselbe sichere JSON-Schnittstelle wie WordPress.
+ *
+ * @param mixed $value Zu kodierende Testdaten.
+ */
+function wp_json_encode( $value, int $flags = 0 ): string {
+	return (string) json_encode( $value, $flags );
+}
+
 $GLOBALS['mgd_ail_test_meta'] = array(
 	55 => array(
 		'_mgd_ail_status'   => 'generated',
@@ -205,6 +259,19 @@ if ( false === $renderer_source ) {
 mgd_ail_renderer_assert_contains( "add_action( 'wp_footer', array( self::class, 'render_legacy_divi_runtime' ), 100 );", $renderer_source, 'Spät gerenderte klassische Divi-Bilder erhalten einen lokalen Frontend-Fallback.' );
 mgd_ail_renderer_assert_contains( "document.createElement('span')", $renderer_source, 'Der Laufzeit-Fallback erzeugt das Badge als DOM-Knoten statt mit unsicherem HTML.' );
 mgd_ail_renderer_assert_contains( "text.textContent = config.label;", $renderer_source, 'Der Laufzeit-Fallback schreibt das Label als Text und nicht per HTML-Injektion.' );
-mgd_ail_renderer_assert_contains( "document.querySelectorAll('.et_pb_image img[class*=\"wp-image-\"]')", $renderer_source, 'Der Laufzeit-Fallback beschränkt sich auf klassische Divi-Bildmodule mit WordPress-Anhangsklasse.' );
+mgd_ail_renderer_assert_contains( "document.querySelectorAll('img')", $renderer_source, 'Der Laufzeit-Fallback berücksichtigt auch Theme-Ausgaben ohne Divi-spezifische Anhangsklasse.' );
+
+/*
+ * Ein Beitragsbild erhält vom Theme häufig keine `wp-image-{ID}`-Klasse. Der
+ * Fallback muss daher sowohl das Original als auch jede WordPress-Größenvariante
+ * über ihren lokalen Upload-Pfad kennen. Nur so kann er das sichtbare Bild im
+ * Einzelbeitrag oder Blog-Archiv sicher der geprüften Mediathek zuordnen.
+ */
+ob_start();
+MGD_AI_Image_Labels_Image_Renderer::render_legacy_divi_runtime();
+$runtime_output = (string) ob_get_clean();
+mgd_ail_renderer_assert_contains( 'wp-content\\/uploads\\/2026\\/03\\/schreibmaschine.jpg', $runtime_output, 'Der Frontend-Fallback kennt den kanonischen Upload-Pfad des gekennzeichneten Bildes.' );
+mgd_ail_renderer_assert_contains( 'wp-content\\/uploads\\/2026\\/03\\/schreibmaschine-980x551.jpg', $runtime_output, 'Der Frontend-Fallback kennt die von WordPress erzeugte Bildgröße für Beitragsbilder.' );
+mgd_ail_renderer_assert_contains( "document.querySelectorAll('img')", $runtime_output, 'Der Frontend-Fallback prüft auch Theme- und Archivbilder ohne Divi-spezifische Anhangsklasse.' );
 
 echo "PASS: Barrierefreie KI-Badges werden rein und sicher gerendert.\n";

@@ -78,6 +78,16 @@ final class MGD_AI_Image_Labels_Image_Renderer {
 			)
 		);
 
+		/*
+		 * Klassische Themes geben Beitragsbilder und Archivkarten zum Teil ohne
+		 * `wp-image-{ID}`-Klasse aus. Deshalb wird die Kennzeichnung nicht nur
+		 * über die Anhangs-ID, sondern zusätzlich über alle von WordPress
+		 * erzeugten lokalen Upload-Pfade verfügbar gemacht. Es handelt sich
+		 * bewusst um einen exakten Pfadvergleich, nie um eine unscharfe Suche
+		 * nach Dateinamen oder um die Kennzeichnung fremder Bildquellen.
+		 *
+		 * @var array<string, array<string, bool|string>> $labels
+		 */
 		$labels = array();
 		foreach ( $attachment_ids as $attachment_id ) {
 			$values = MGD_AI_Image_Labels_Attachment_Meta::get_values( (int) $attachment_id );
@@ -87,12 +97,16 @@ final class MGD_AI_Image_Labels_Image_Renderer {
 				continue;
 			}
 
-			$labels[ (string) (int) $attachment_id ] = array(
+			$configuration = array(
 				'label'    => self::LABELS[ $status ],
 				'position' => self::sanitize_value( $values['position'] ?? 'bottom-right', array( 'top-left', 'top-right', 'bottom-left', 'bottom-right' ), 'bottom-right' ),
 				'theme'    => self::sanitize_value( $values['theme'] ?? 'auto', array( 'auto', 'light', 'dark' ), 'auto' ),
 				'deepfake' => 'deepfake' === $status,
 			);
+
+			foreach ( self::get_attachment_upload_paths( (int) $attachment_id ) as $path ) {
+				$labels[ $path ] = $configuration;
+			}
 		}
 
 		if ( array() === $labels ) {
@@ -112,12 +126,37 @@ final class MGD_AI_Image_Labels_Image_Renderer {
 		(function () {
 			'use strict';
 			const labels = <?php echo $json; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Sicheres JSON mit Hex-Escaping für einen JavaScript-Kontext. ?>;
-			for (const image of document.querySelectorAll('.et_pb_image img[class*="wp-image-"]')) {
-				const module = image.closest('.et_pb_image');
-				const wrap = module ? module.querySelector('.et_pb_image_wrap') : null;
-				const match = image.className.match(/(?:^|\s)wp-image-([1-9][0-9]*)(?:\s|$)/);
-				const config = match ? labels[match[1]] : null;
-				if (!wrap || !config || wrap.querySelector('.mgd-ail-badge')) continue;
+			const getUploadPath = (image) => {
+				try {
+					return new URL(image.currentSrc || image.src, document.baseURI).pathname;
+				} catch (error) {
+					return '';
+				}
+			};
+			const createSafeWrapper = (image) => {
+				const diviWrap = image.closest('.et_pb_image_wrap');
+				if (diviWrap) return diviWrap;
+
+				/* Ein Archivbild liegt häufig allein in einem Link. In diesem Fall
+				 * bleibt der Link der Layoutkontext; Klick- und Tastaturverhalten
+				 * bleiben vollständig beim Theme. */
+				const link = image.closest('a');
+				if (link && 1 === link.querySelectorAll('img').length && '' === link.textContent.trim()) return link;
+
+				/* Einzelbeiträge enthalten das Bild oft direkt neben Überschrift und
+				 * Metadaten. Ein eigener, nur um dieses Bild gelegter Wrapper verhindert,
+				 * dass sich die Badge-Ecke versehentlich auf den ganzen Beitrag bezieht. */
+				const wrapper = document.createElement('span');
+				wrapper.className = 'mgd-ail-image-wrapper';
+				image.parentNode.insertBefore(wrapper, image);
+				wrapper.appendChild(image);
+				return wrapper;
+			};
+			for (const image of document.querySelectorAll('img')) {
+				const config = labels[getUploadPath(image)];
+				if (!config) continue;
+				const wrap = createSafeWrapper(image);
+				if (!wrap || wrap.querySelector('.mgd-ail-badge')) continue;
 				wrap.classList.add('mgd-ail-image-wrapper');
 				const badge = document.createElement('span');
 				badge.className = 'mgd-ail-badge mgd-ail-position-' + config.position + ' mgd-ail-theme-' + config.theme;
@@ -137,6 +176,77 @@ final class MGD_AI_Image_Labels_Image_Renderer {
 		}());
 		</script>
 		<?php
+	}
+
+	/**
+	 * Ermittelt die öffentlich ausgegebenen Upload-Pfade eines Bildanhangs.
+	 *
+	 * WordPress kann ein Originalbild in mehreren selbst erzeugten Größen
+	 * ausgeben. Ein Theme verwendet beispielsweise im Archiv `-400x284`, im
+	 * Einzelbeitrag aber `-980x551`. Beide Pfade werden ausschließlich aus den
+	 * WordPress-Metadaten des identischen Anhangs abgeleitet.
+	 *
+	 * @param int $attachment_id Positive WordPress-Anhangs-ID.
+	 * @return array<int, string> Eindeutige absolute URL-Pfade ohne Query-String.
+	 */
+	private static function get_attachment_upload_paths( int $attachment_id ): array {
+		if (
+			$attachment_id <= 0 ||
+			! function_exists( 'wp_get_attachment_url' ) ||
+			! function_exists( 'wp_get_attachment_metadata' ) ||
+			! function_exists( 'wp_upload_dir' )
+		) {
+			return array();
+		}
+
+		$paths        = array();
+		$original_url = wp_get_attachment_url( $attachment_id );
+		$original     = self::get_url_path( is_string( $original_url ) ? $original_url : '' );
+
+		if ( '' !== $original ) {
+			$paths[] = $original;
+		}
+
+		$metadata = wp_get_attachment_metadata( $attachment_id );
+		$upload   = wp_upload_dir();
+		$file     = is_array( $metadata ) && is_string( $metadata['file'] ?? null ) ? ltrim( $metadata['file'], '/' ) : '';
+		$base_url = is_array( $upload ) && is_string( $upload['baseurl'] ?? null ) ? rtrim( $upload['baseurl'], '/' ) : '';
+
+		if ( '' === $file || '' === $base_url || ! is_array( $metadata['sizes'] ?? null ) ) {
+			return array_values( array_unique( $paths ) );
+		}
+
+		$directory = dirname( $file );
+		$directory = '.' === $directory ? '' : trim( $directory, '/' );
+
+		foreach ( $metadata['sizes'] as $size ) {
+			$size_file = is_array( $size ) && is_string( $size['file'] ?? null ) ? ltrim( $size['file'], '/' ) : '';
+
+			if ( '' === $size_file ) {
+				continue;
+			}
+
+			$path = self::get_url_path( $base_url . '/' . ( '' === $directory ? '' : $directory . '/' ) . $size_file );
+
+			if ( '' !== $path ) {
+				$paths[] = $path;
+			}
+		}
+
+		return array_values( array_unique( $paths ) );
+	}
+
+	/**
+	 * Normalisiert eine Bild-URL für einen datensparsamen, exakten Browservergleich.
+	 *
+	 * Die Domain, Query-Parameter und Fragmente werden nicht übertragen oder
+	 * verglichen. Damit funktionieren auch HTTPS, ein lokales CDN oder ein
+	 * Cache-Buster, ohne aus einer URL jemals eine Anhangs-ID zu erraten.
+	 */
+	private static function get_url_path( string $url ): string {
+		$path = parse_url( $url, PHP_URL_PATH );
+
+		return is_string( $path ) && '' !== $path && '/' === $path[0] ? $path : '';
 	}
 
 	/**

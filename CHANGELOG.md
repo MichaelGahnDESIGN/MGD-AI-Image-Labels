@@ -2,6 +2,17 @@
 
 Alle wesentlichen Änderungen werden in diesem Dokument festgehalten. Versionen folgen dem Format `MAJOR.MINOR.PATCH`.
 
+## 0.6.4 – 5. August 2026
+
+### Behoben
+
+- KI-Labels werden nun auch bei Beitragsbildern und Blog-Archivkarten ausgegeben, wenn ein Theme die übliche WordPress-Klasse `wp-image-{ID}` nicht ausgibt.
+- Der lokale Frontend-Fallback erkennt neben dem Original auch alle von WordPress erzeugten Größenvarianten eines ausdrücklich gekennzeichneten Bildes, etwa `-400x284` im Archiv oder `-980x551` im Einzelbeitrag.
+
+### Sicherheit und Datenschutz
+
+- Die Zuordnung erfolgt ausschließlich über exakte Pfade bekannter lokaler WordPress-Uploadvarianten. Externe Bilder, beliebige Dateinamen und unmarkierte Medien bleiben unverändert.
+
 ## 0.6.3 – 5. August 2026
 
 ### Behoben
