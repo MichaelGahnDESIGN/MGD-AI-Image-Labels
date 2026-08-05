@@ -39,6 +39,7 @@ final class MGD_AI_Image_Labels_Plugin {
 		require_once MGD_AI_IMAGE_LABELS_DIR . 'includes/class-image-renderer.php';
 		require_once MGD_AI_IMAGE_LABELS_DIR . 'includes/class-shortcodes.php';
 		require_once MGD_AI_IMAGE_LABELS_DIR . 'includes/class-admin-page.php';
+		require_once MGD_AI_IMAGE_LABELS_DIR . 'includes/class-ai-philosophy.php';
 
 		// Die Komponenten ergänzen Felder in der Mediathek und eine rein lokale,
 		// nicht destruktive Ausgabe bei WordPress-Bildern. Divi-Inhalte, Header,
@@ -49,6 +50,7 @@ final class MGD_AI_Image_Labels_Plugin {
 		MGD_AI_Image_Labels_Image_Renderer::register();
 		MGD_AI_Image_Labels_Shortcodes::register();
 		MGD_AI_Image_Labels_Admin_Page::register();
+		MGD_AI_Image_Labels_AI_Philosophy::register();
 		MGD_AI_Image_Labels_Plugin_Presentation::register();
 
 		// Das Plugin nutzt den normalen WordPress-Update-Dialog. Die Updater-Klasse

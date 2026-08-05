@@ -108,6 +108,27 @@ function submit_button(): void {
 	echo '<button type="submit">Speichern</button>';
 }
 
+/** Minimaler Editor- und Nonce-Ersatz für die isolierte AI-Philosophie-View. */
+function wp_nonce_field( string $action, string $name ): void {
+	echo '<input name="' . esc_attr( $name ) . '" value="test">';
+}
+
+function wp_editor( string $content, string $editor_id, array $settings = array() ): void {
+	echo '<textarea id="' . esc_attr( $editor_id ) . '">' . esc_html( $content ) . '</textarea>';
+}
+
+function wp_kses( string $content, array $allowed_html ): string {
+	return strip_tags( $content, '<p><h2><h3><h4><ul><ol><li><strong><em><a><br>' );
+}
+
+function wpautop( string $content ): string {
+	return '<p>' . $content . '</p>';
+}
+
+function wp_unslash( string $value ): string {
+	return $value;
+}
+
 function selected( string $selected, string $current, bool $display = true ): string {
 	return $selected === $current ? ' selected="selected"' : '';
 }
@@ -117,6 +138,7 @@ function checked( string $checked, string $current, bool $display = true ): stri
 }
 
 require_once dirname( __DIR__ ) . '/includes/class-plugin-options.php';
+require_once dirname( __DIR__ ) . '/includes/class-ai-philosophy.php';
 require_once dirname( __DIR__ ) . '/includes/class-admin-page.php';
 
 function mgd_ail_admin_assert_same( $expected, $actual, string $message ): void {
