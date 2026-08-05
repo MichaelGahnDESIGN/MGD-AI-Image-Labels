@@ -19,9 +19,12 @@
 }
 
 /* Ein Hintergrundbild bleibt vollständig Aufgabe des umgebenden Divi-Moduls.
- * Diese Hülle stellt ausschließlich den lokalen Bezugspunkt für das Badge. */
+ * Die leere Hülle überzieht dessen bereits positionierte Fläche vollständig und
+ * stellt dadurch auch ohne eigenen Textinhalt einen verlässlichen Bezugspunkt
+ * für das absolut platzierte Badge bereit. */
 .mgd-ail-background-label {
-	position: relative;
+	position: absolute;
+	inset: 0;
 	display: block;
 }
 

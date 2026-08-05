@@ -139,6 +139,7 @@ mgd_ail_shortcode_assert_same( '', MGD_AI_Image_Labels_Shortcodes::render_label(
 mgd_ail_shortcode_assert_same( '', MGD_AI_Image_Labels_Shortcodes::render_label( array( 'image_id' => '55', 'offset_x' => '193' ) ), 'Ein zu großer Offset erzeugt keine Ausgabe.' );
 mgd_ail_shortcode_assert_same( '', MGD_AI_Image_Labels_Shortcodes::render_label( array( 'image_id' => '55', 'offset_y' => '12.5' ) ), 'Ein nicht ganzzahliger Offset erzeugt keine Ausgabe.' );
 mgd_ail_shortcode_assert_same( '', MGD_AI_Image_Labels_Shortcodes::render_label( array( 'image_id' => '55', 'class' => 'eins zwei drei vier' ) ), 'Mehr als drei Zusatzklassen erzeugen keine Ausgabe.' );
+mgd_ail_shortcode_assert_same( '', MGD_AI_Image_Labels_Shortcodes::render_label( array( 'image_id' => '55', 'fremdes_attribut' => '1' ) ), 'Unbekannte Attribute erzeugen keine Ausgabe.' );
 
 $deepfake = MGD_AI_Image_Labels_Shortcodes::render_label( array( 'image_id' => '57' ) );
 mgd_ail_shortcode_assert_contains( 'AI DEEPFAKE', $deepfake, 'Das vorhandene Deepfake-Label wird wiederverwendet.' );
@@ -148,7 +149,9 @@ $frontend_css = file_get_contents( dirname( __DIR__ ) . '/assets/css/frontend.cs
 if ( false === $frontend_css ) {
 	throw new RuntimeException( 'Die lokale Frontend-CSS-Datei konnte nicht gelesen werden.' );
 }
-mgd_ail_shortcode_assert_contains( '.mgd-ail-background-label {', $frontend_css, 'Der Shortcode erhält einen eigenen relativen Layout-Kontext.' );
+mgd_ail_shortcode_assert_contains( '.mgd-ail-background-label {', $frontend_css, 'Der Shortcode erhält eine eigene Hülle für die Hintergrundbild-Ausgabe.' );
+mgd_ail_shortcode_assert_contains( 'position: absolute;', $frontend_css, 'Die Hülle wird als Overlay innerhalb des Hintergrund-Containers positioniert.' );
 mgd_ail_shortcode_assert_contains( '.mgd-ail-background-label .mgd-ail-badge', $frontend_css, 'Offset-Transformationen bleiben auf Shortcode-Badges begrenzt.' );
+mgd_ail_shortcode_assert_contains( 'inset: 0;', $frontend_css, 'Die leere Shortcode-Hülle überlagert die Fläche des Hintergrund-Containers vollständig.' );
 
 echo "PASS: Hintergrundbild-Shortcodes geben ausschließlich sichere KI-Badges aus.\n";

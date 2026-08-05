@@ -17,6 +17,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 final class MGD_AI_Image_Labels_Shortcodes {
 
+	/** @var array<string, string> Ausschließlich unterstützte Shortcode-Attribute. */
+	private const DEFAULT_ATTRIBUTES = array(
+		'image_id' => '',
+		'class'    => '',
+		'offset_x' => '0',
+		'offset_y' => '0',
+	);
+
 	/** Registriert ausschließlich den fest benannten Hintergrund-Shortcode. */
 	public static function register(): void {
 		add_shortcode( 'mgd_ai_label', array( self::class, 'render_label' ) );
@@ -33,15 +41,15 @@ final class MGD_AI_Image_Labels_Shortcodes {
 	 * @param array<string, mixed> $attributes Ungeprüfte Shortcode-Attribute.
 	 */
 	public static function render_label( array $attributes ): string {
-		$attributes = shortcode_atts(
-			array(
-				'image_id' => '',
-				'class'    => '',
-				'offset_x' => '0',
-				'offset_y' => '0',
-			),
-			$attributes
-		);
+		/* shortcode_atts() ignoriert fremde Schlüssel regulär. Für diesen sicher
+		 * begrenzten Shortcode ist das absichtlich nicht ausreichend: Ein Tippfehler
+		 * oder Manipulationsversuch darf nicht mit einer scheinbar gültigen Ausgabe
+		 * weiterlaufen. */
+		if ( array() !== array_diff_key( $attributes, self::DEFAULT_ATTRIBUTES ) ) {
+			return '';
+		}
+
+		$attributes = shortcode_atts( self::DEFAULT_ATTRIBUTES, $attributes );
 
 		$image_id = self::validate_positive_integer( $attributes['image_id'] );
 		$offset_x = self::validate_offset( $attributes['offset_x'] );
