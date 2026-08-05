@@ -25,12 +25,12 @@
 	align-items: center;
 	min-height: 28px;
 	max-width: calc(100% - 24px);
-	padding: 5px 9px;
+	padding: var(--mgd-ail-padding-y, 5px) var(--mgd-ail-padding-x, 9px);
 	border: 1px solid rgba(255, 255, 255, 0.72);
-	border-radius: 999px;
+	border-radius: var(--mgd-ail-radius, 999px);
 	box-shadow: 0 5px 18px rgba(0, 0, 0, 0.32);
 	font-family: Arial, "Open Sans", sans-serif;
-	font-size: 12px;
+	font-size: var(--mgd-ail-font-size, 6px);
 	font-weight: 700;
 	letter-spacing: 0.06em;
 	line-height: 1.2;
@@ -39,10 +39,10 @@
 	pointer-events: none;
 }
 
-.mgd-ail-position-top-left { top: 12px; left: 12px; }
-.mgd-ail-position-top-right { top: 12px; right: 12px; }
-.mgd-ail-position-bottom-left { bottom: 12px; left: 12px; }
-.mgd-ail-position-bottom-right { right: 12px; bottom: 12px; }
+.mgd-ail-position-top-left { top: var(--mgd-ail-offset, 12px); left: var(--mgd-ail-offset, 12px); }
+.mgd-ail-position-top-right { top: var(--mgd-ail-offset, 12px); right: var(--mgd-ail-offset, 12px); }
+.mgd-ail-position-bottom-left { bottom: var(--mgd-ail-offset, 12px); left: var(--mgd-ail-offset, 12px); }
+.mgd-ail-position-bottom-right { right: var(--mgd-ail-offset, 12px); bottom: var(--mgd-ail-offset, 12px); }
 
 /* Sicherer Fallback: Auch Browser ohne Glas-Unschärfe zeigen klaren Text. */
 .mgd-ail-theme-auto,
@@ -77,28 +77,21 @@
 	.mgd-ail-theme-auto,
 	.mgd-ail-theme-dark {
 		background: rgba(20, 23, 29, 0.76);
-		-webkit-backdrop-filter: blur(10px) saturate(130%);
-		backdrop-filter: blur(10px) saturate(130%);
+		-webkit-backdrop-filter: blur(var(--mgd-ail-blur, 10px)) saturate(130%);
+		backdrop-filter: blur(var(--mgd-ail-blur, 10px)) saturate(130%);
 	}
 
 	.mgd-ail-theme-light {
 		background: rgba(255, 255, 255, 0.78);
-		-webkit-backdrop-filter: blur(10px) saturate(125%);
-		backdrop-filter: blur(10px) saturate(125%);
+		-webkit-backdrop-filter: blur(var(--mgd-ail-blur, 10px)) saturate(125%);
+		backdrop-filter: blur(var(--mgd-ail-blur, 10px)) saturate(125%);
 	}
 }
 
 @media (max-width: 480px) {
 	.mgd-ail-badge {
 		min-height: 26px;
-		padding: 4px 8px;
-		font-size: 11px;
 	}
-
-	.mgd-ail-position-top-left { top: 8px; left: 8px; }
-	.mgd-ail-position-top-right { top: 8px; right: 8px; }
-	.mgd-ail-position-bottom-left { bottom: 8px; left: 8px; }
-	.mgd-ail-position-bottom-right { right: 8px; bottom: 8px; }
 }
 
 /* Das Badge ist statisch; diese Regel verhindert spätere Animationen bei

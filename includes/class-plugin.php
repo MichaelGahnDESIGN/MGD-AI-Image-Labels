@@ -31,6 +31,7 @@ final class MGD_AI_Image_Labels_Plugin {
 	 */
 	public static function register(): void {
 		require_once MGD_AI_IMAGE_LABELS_DIR . 'includes/class-attachment-meta.php';
+		require_once MGD_AI_IMAGE_LABELS_DIR . 'includes/class-plugin-options.php';
 		require_once MGD_AI_IMAGE_LABELS_DIR . 'includes/class-github-updater.php';
 		require_once MGD_AI_IMAGE_LABELS_DIR . 'includes/class-plugin-presentation.php';
 		require_once MGD_AI_IMAGE_LABELS_DIR . 'includes/class-media-fields.php';
@@ -42,6 +43,7 @@ final class MGD_AI_Image_Labels_Plugin {
 		// Footer und Menü werden dabei nicht verändert.
 		MGD_AI_Image_Labels_Media_Fields::register();
 		MGD_AI_Image_Labels_Media_Ajax::register();
+		MGD_AI_Image_Labels_Plugin_Options::register();
 		MGD_AI_Image_Labels_Image_Renderer::register();
 		MGD_AI_Image_Labels_Plugin_Presentation::register();
 

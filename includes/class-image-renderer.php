@@ -273,6 +273,7 @@ final class MGD_AI_Image_Labels_Image_Renderer {
 			array(),
 			MGD_AI_IMAGE_LABELS_VERSION
 		);
+		wp_add_inline_style( 'mgd-ai-image-labels', MGD_AI_Image_Labels_Plugin_Options::get_css_variables() );
 	}
 
 	/**
