@@ -17,17 +17,22 @@
 	 * Detailansicht des Anhangs funktionsfähig.
 	 */
 	function getDialogScope( $button ) {
-		var $scope = $button.closest( '.attachment-details' );
-
 		/*
-		 * WordPress zeigt je nach Medienansicht unterschiedliche Hüllen an. Der
-		 * sichtbare Detailsbereich ist ein sicherer Fallback, falls der Button
-		 * von einer abweichenden WordPress-Ansicht verschoben wurde.
+		 * Die beiden Fallbacks entsprechen den sichtbaren Bereichen
+		 * .media-modal:visible .attachment-details:visible und
+		 * .media-frame-content:visible .attachment-details:visible.
 		 */
+		var $scope = $button.closest( '.attachment-details:visible' );
 		if ( ! $scope.length ) {
-			$scope = $button.closest( '.media-frame-content' ).find( '.attachment-details:visible' ).last();
+			$scope = $button.closest( '.media-modal:visible' )
+				.find( '.attachment-details:visible' )
+				.last();
 		}
-
+		if ( ! $scope.length ) {
+			$scope = $button.closest( '.media-frame-content:visible' )
+				.find( '.attachment-details:visible' )
+				.last();
+		}
 		return $scope;
 	}
 
