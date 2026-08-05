@@ -166,11 +166,12 @@ if ( false === $frontend_css ) {
 
 mgd_ail_options_assert_contains( 'padding: var(--mgd-ail-padding-y, 5px) var(--mgd-ail-padding-x, 9px);', $frontend_css, 'Das Badge verwendet globale Innenabstände mit sicheren Fallbacks.' );
 mgd_ail_options_assert_contains( 'box-sizing: border-box;', $frontend_css, 'Padding und Rahmen bleiben innerhalb der dynamisch berechneten Badge-Breite.' );
-mgd_ail_options_assert_contains( 'max-width: calc(100% - var(--mgd-ail-offset, 12px) - var(--mgd-ail-offset, 12px));', $frontend_css, 'Die Badge-Breite reserviert bei jeder Position beide konfigurierbaren Außenabstände.' );
+mgd_ail_options_assert_contains( '--mgd-ail-safe-offset: min(var(--mgd-ail-offset, 12px), 25%);', $frontend_css, 'Sehr große Offsets werden pro Badge auf ein Viertel der lokalen Bildbreite begrenzt.' );
+mgd_ail_options_assert_contains( 'max-width: calc(100% - var(--mgd-ail-safe-offset) - var(--mgd-ail-safe-offset));', $frontend_css, 'Die Badge-Breite reserviert bei jeder Position beide lokal begrenzten Außenabstände.' );
 mgd_ail_options_assert_contains( 'border-radius: var(--mgd-ail-radius, 999px);', $frontend_css, 'Das Badge verwendet den globalen Radius mit sicherem Fallback.' );
 mgd_ail_options_assert_contains( 'font-size: var(--mgd-ail-font-size, 6px);', $frontend_css, 'Das Badge verwendet die globale Schriftgröße mit sicherem Fallback.' );
-mgd_ail_options_assert_contains( '.mgd-ail-position-top-left { top: var(--mgd-ail-offset, 12px); left: var(--mgd-ail-offset, 12px); }', $frontend_css, 'Die obere linke Pro-Bild-Position verwendet den globalen Abstand.' );
-mgd_ail_options_assert_contains( '.mgd-ail-position-bottom-right { right: var(--mgd-ail-offset, 12px); bottom: var(--mgd-ail-offset, 12px); }', $frontend_css, 'Die untere rechte Pro-Bild-Position verwendet den globalen Abstand.' );
+mgd_ail_options_assert_contains( '.mgd-ail-position-top-left { top: var(--mgd-ail-safe-offset); left: var(--mgd-ail-safe-offset); }', $frontend_css, 'Die obere linke Pro-Bild-Position verwendet den lokal begrenzten Abstand.' );
+mgd_ail_options_assert_contains( '.mgd-ail-position-bottom-right { right: var(--mgd-ail-safe-offset); bottom: var(--mgd-ail-safe-offset); }', $frontend_css, 'Die untere rechte Pro-Bild-Position verwendet den lokal begrenzten Abstand.' );
 mgd_ail_options_assert_contains( 'blur(var(--mgd-ail-blur, 10px))', $frontend_css, 'Die progressive Glasdarstellung verwendet die lokale Blur-Variable.' );
 
 echo "PASS: Globale Label-Standards werden strikt validiert und lokal als CSS-Variablen ausgegeben.\n";

@@ -35,14 +35,20 @@
 }
 
 .mgd-ail-badge {
+	/* Ein globaler Offset darf ein schmales Bild nie vollständig "verlassen".
+	 * 25 % halten links und rechts immer ausreichend Platz für ein lesbares
+	 * Badge frei: Bei 100 px Breite werden aus einem konfigurierten 96-px-
+	 * Offset daher höchstens 25 px. Die Variable bleibt lokal am Badge und
+	 * verändert keine Abstände anderer Divi- oder WordPress-Elemente. */
+	--mgd-ail-safe-offset: min(var(--mgd-ail-offset, 12px), 25%);
 	position: absolute;
 	z-index: 2;
 	display: inline-flex;
 	align-items: center;
 	min-height: 28px;
-	/* Beide Seiten reservieren den konfigurierbaren Abstand, damit große
+	/* Beide Seiten reservieren den lokal begrenzten Abstand, damit große
 	 * Offsets das Badge nicht über den Bildrand hinausschieben. */
-	max-width: calc(100% - var(--mgd-ail-offset, 12px) - var(--mgd-ail-offset, 12px));
+	max-width: calc(100% - var(--mgd-ail-safe-offset) - var(--mgd-ail-safe-offset));
 	box-sizing: border-box;
 	padding: var(--mgd-ail-padding-y, 5px) var(--mgd-ail-padding-x, 9px);
 	border: 1px solid rgba(255, 255, 255, 0.72);
@@ -58,10 +64,10 @@
 	pointer-events: none;
 }
 
-.mgd-ail-position-top-left { top: var(--mgd-ail-offset, 12px); left: var(--mgd-ail-offset, 12px); }
-.mgd-ail-position-top-right { top: var(--mgd-ail-offset, 12px); right: var(--mgd-ail-offset, 12px); }
-.mgd-ail-position-bottom-left { bottom: var(--mgd-ail-offset, 12px); left: var(--mgd-ail-offset, 12px); }
-.mgd-ail-position-bottom-right { right: var(--mgd-ail-offset, 12px); bottom: var(--mgd-ail-offset, 12px); }
+.mgd-ail-position-top-left { top: var(--mgd-ail-safe-offset); left: var(--mgd-ail-safe-offset); }
+.mgd-ail-position-top-right { top: var(--mgd-ail-safe-offset); right: var(--mgd-ail-safe-offset); }
+.mgd-ail-position-bottom-left { bottom: var(--mgd-ail-safe-offset); left: var(--mgd-ail-safe-offset); }
+.mgd-ail-position-bottom-right { right: var(--mgd-ail-safe-offset); bottom: var(--mgd-ail-safe-offset); }
 
 /* Sicherer Fallback: Auch Browser ohne Glas-Unschärfe zeigen klaren Text. */
 .mgd-ail-theme-auto,
