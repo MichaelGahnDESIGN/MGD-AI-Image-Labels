@@ -23,11 +23,11 @@ if ( false === strpos( $script, '$button.closest( \'.attachment-details:visible\
 	throw new RuntimeException( 'Der Medien-Speicherbutton begrenzt die Feldsuche noch nicht auf den aktuell geöffneten Anhang.' );
 }
 
-if ( false === strpos( $script, '.media-modal:visible .attachment-details:visible' ) ) {
+if ( false === strpos( $script, '$button.closest( \'.media-modal:visible\' )' ) ) {
 	throw new RuntimeException( 'Die sichtbaren Anhang-Details im Divi-Medienmodal fehlen für den Medien-Speicherbutton.' );
 }
 
-if ( false === strpos( $script, '.media-frame-content:visible .attachment-details:visible' ) ) {
+if ( false === strpos( $script, '$button.closest( \'.media-frame-content:visible\' )' ) ) {
 	throw new RuntimeException( 'Die sichtbaren Anhang-Details im WordPress-Medienframe fehlen für den Medien-Speicherbutton.' );
 }
 

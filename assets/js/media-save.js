@@ -17,11 +17,6 @@
 	 * Detailansicht des Anhangs funktionsfähig.
 	 */
 	function getDialogScope( $button ) {
-		/*
-		 * Die beiden Fallbacks entsprechen den sichtbaren Bereichen
-		 * .media-modal:visible .attachment-details:visible und
-		 * .media-frame-content:visible .attachment-details:visible.
-		 */
 		var $scope = $button.closest( '.attachment-details:visible' );
 		if ( ! $scope.length ) {
 			$scope = $button.closest( '.media-modal:visible' )
