@@ -120,12 +120,26 @@ final class MGD_AI_Image_Labels_Attachment_Meta {
 	 * nachvollziehbar, dass ein Bild geprüft wurde, ohne etwas sichtbar zu
 	 * kennzeichnen.
 	 *
-	 * @param array<string, mixed> $values Werte aus dem Mediathekformular.
+	 * Fehlende Felder werden absichtlich nicht als Standardwerte interpretiert.
+	 * WordPress kann einen Anhang unabhängig von diesem Plugin speichern und
+	 * übermittelt dabei nicht zwingend alle eigenen Zusatzfelder. Würden fehlende
+	 * Werte hier mit den Standardwerten ersetzt, gingen bereits getroffene
+	 * Kennzeichnungsentscheidungen bei einer normalen Medienänderung verloren.
+	 *
+	 * @param array<string, mixed> $values Werte aus dem Mediathekformular oder AJAX.
 	 */
 	public static function save_values( int $attachment_id, array $values ): void {
-		update_post_meta( $attachment_id, self::STATUS_KEY, self::sanitize_status( $values['mgd_ail_status'] ?? 'none' ) );
-		update_post_meta( $attachment_id, self::POSITION_KEY, self::sanitize_position( $values['mgd_ail_position'] ?? 'bottom-right' ) );
-		update_post_meta( $attachment_id, self::THEME_KEY, self::sanitize_theme( $values['mgd_ail_theme'] ?? 'auto' ) );
+		if ( array_key_exists( 'mgd_ail_status', $values ) ) {
+			update_post_meta( $attachment_id, self::STATUS_KEY, self::sanitize_status( $values['mgd_ail_status'] ) );
+		}
+
+		if ( array_key_exists( 'mgd_ail_position', $values ) ) {
+			update_post_meta( $attachment_id, self::POSITION_KEY, self::sanitize_position( $values['mgd_ail_position'] ) );
+		}
+
+		if ( array_key_exists( 'mgd_ail_theme', $values ) ) {
+			update_post_meta( $attachment_id, self::THEME_KEY, self::sanitize_theme( $values['mgd_ail_theme'] ) );
+		}
 	}
 
 	/**

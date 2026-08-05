@@ -2,6 +2,13 @@
 
 Alle wesentlichen Änderungen werden in diesem Dokument festgehalten. Versionen folgen dem Format `MAJOR.MINOR.PATCH`.
 
+## 0.6.3 – 5. August 2026
+
+### Behoben
+
+- Ein nachgelagerter WordPress-Medien-Speichervorgang ohne KI-Felder kann gespeicherte Kennzeichnungswerte nicht mehr mit Standardwerten überschreiben.
+- Teilaktualisierungen eines Anhangs ändern nur die tatsächlich übermittelten Kennzeichnungswerte; Status, Position und Glas-Variante bleiben ansonsten erhalten.
+
 ## 0.6.2 – 5. August 2026
 
 ### Behoben

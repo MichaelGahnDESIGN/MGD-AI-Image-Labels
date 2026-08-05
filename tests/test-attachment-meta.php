@@ -47,6 +47,7 @@ function get_post_mime_type( int $attachment_id ): string {
 
 function update_post_meta( int $attachment_id, string $key, string $value ): void {
 	$GLOBALS['mgd_ail_test_meta_writes'][] = array( $attachment_id, $key, $value );
+	$GLOBALS['mgd_ail_test_meta_values'][ $attachment_id ][ $key ] = $value;
 }
 
 function get_post_meta( int $attachment_id, string $key, bool $single ): string {
@@ -118,6 +119,32 @@ $GLOBALS['mgd_ail_test_meta_values'][78] = array(
 $individual_values = MGD_AI_Image_Labels_Attachment_Meta::get_values( 78 );
 mgd_ail_assert_same( 'bottom-left', $individual_values['position'], 'Eine gespeicherte Einzelposition hat Vorrang vor dem globalen Standard.' );
 mgd_ail_assert_same( 'light', $individual_values['theme'], 'Eine gespeicherte Einzel-Glasvariante hat Vorrang vor dem globalen Standard.' );
+
+// WordPress kann einen Medien-Anhang zusätzlich speichern, obwohl dessen
+// Anfrage keine Felder dieses Plugins enthält. Dieser Vorgang darf eine zuvor
+// bewusst gespeicherte Kennzeichnung niemals mit Standardwerten überschreiben.
+$GLOBALS['mgd_ail_test_capabilities'] = array(
+	'upload_files' => true,
+	'edit_post:79' => true,
+);
+$GLOBALS['mgd_ail_test_meta_values'][79] = array(
+	MGD_AI_Image_Labels_Attachment_Meta::STATUS_KEY   => 'generated',
+	MGD_AI_Image_Labels_Attachment_Meta::POSITION_KEY => 'bottom-left',
+	MGD_AI_Image_Labels_Attachment_Meta::THEME_KEY    => 'light',
+);
+$GLOBALS['mgd_ail_test_meta_writes'] = array();
+MGD_AI_Image_Labels_Attachment_Meta::save_values( 79, array( 'mgd_ail_status' => 'modified' ) );
+$partially_updated_values = MGD_AI_Image_Labels_Attachment_Meta::get_values( 79 );
+mgd_ail_assert_same( 'modified', $partially_updated_values['status'], 'Ein vorhandener Einzelwert darf gezielt aktualisiert werden.' );
+mgd_ail_assert_same( 'bottom-left', $partially_updated_values['position'], 'Eine Teilaktualisierung darf die gespeicherte Position nicht zurücksetzen.' );
+mgd_ail_assert_same( 'light', $partially_updated_values['theme'], 'Eine Teilaktualisierung darf die gespeicherte Glas-Variante nicht zurücksetzen.' );
+$GLOBALS['mgd_ail_test_meta_writes'] = array();
+MGD_AI_Image_Labels_Media_Fields::save_fields( array( 'ID' => 79 ), array( 'post_title' => 'Unabhängige WordPress-Medienänderung' ) );
+$preserved_values = MGD_AI_Image_Labels_Attachment_Meta::get_values( 79 );
+mgd_ail_assert_same( 'modified', $preserved_values['status'], 'Eine WordPress-Medienänderung ohne Plugin-Felder darf den KI-Status nicht zurücksetzen.' );
+mgd_ail_assert_same( 'bottom-left', $preserved_values['position'], 'Eine WordPress-Medienänderung ohne Plugin-Felder darf die Position nicht zurücksetzen.' );
+mgd_ail_assert_same( 'light', $preserved_values['theme'], 'Eine WordPress-Medienänderung ohne Plugin-Felder darf die Glas-Variante nicht zurücksetzen.' );
+mgd_ail_assert_same( array(), $GLOBALS['mgd_ail_test_meta_writes'], 'Ohne gesendete Plugin-Felder dürfen keine Kennzeichnungs-Metadaten geschrieben werden.' );
 
 // Sicherheitsfall: Eine allgemeine Upload-Berechtigung reicht nicht aus. Die
 // Person muss das konkrete Bild auch mit edit_post bearbeiten dürfen.
