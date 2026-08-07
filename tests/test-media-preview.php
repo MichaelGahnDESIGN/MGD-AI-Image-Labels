@@ -40,6 +40,8 @@ if ( false !== strpos( $script, 'XMLHttpRequest' ) || false !== strpos( $script,
 
 mgd_ail_preview_assert_contains( '.mgd-ail-media-preview', $style, 'Die Vorschau benötigt eine eigene, auf das Medienmodal begrenzte Gestaltung.' );
 mgd_ail_preview_assert_contains( '.mgd-ail-media-preview-canvas', $style, 'Die Vorschaufläche muss exakt über dem sichtbaren Bild positioniert werden können.' );
+mgd_ail_preview_assert_contains( '--mgd-ail-media-preview-inset: 4%;', $style, 'Der Innenabstand muss prozentual zur tatsächlichen Bildfläche berechnet werden.' );
+mgd_ail_preview_assert_contains( 'var(--mgd-ail-media-preview-inset)', $style, 'Alle vier Vorschau-Ecken müssen denselben prozentualen Innenabstand verwenden.' );
 mgd_ail_preview_assert_contains( 'pointer-events: none', $style, 'Das Vorschau-Label darf Bedienung und Bildauswahl nicht überdecken.' );
 mgd_ail_preview_assert_contains( 'media-preview.js', $fields, 'Die Vorschau muss in WordPress und im Divi-5-Medienmodal geladen werden.' );
 mgd_ail_preview_assert_contains( 'media-preview.css', $fields, 'Die lokale Vorschau-Gestaltung muss gezielt mitgeladen werden.' );

@@ -2,6 +2,16 @@
 
 Alle wesentlichen Änderungen werden in diesem Dokument festgehalten. Versionen folgen dem Format `MAJOR.MINOR.PATCH`.
 
+## 0.6.7 – 8. August 2026
+
+### Verbessert
+
+- Die Innenabstände der Kennzeichnungs-Vorschau richten sich nun mit vier Prozent immer proportional an der sichtbaren Bildfläche aus – unabhängig von Viewport, Bildformat und der variablen Höhe des WordPress-Mediencontainers.
+
+### Sicherheit und Datenschutz
+
+- Die Vorschau bleibt rein lokal im Browser. Es werden weder Bilddateien noch Anhang-Metadaten durch die Positionsvorschau verändert.
+
 ## 0.6.6 – 8. August 2026
 
 ### Verbessert

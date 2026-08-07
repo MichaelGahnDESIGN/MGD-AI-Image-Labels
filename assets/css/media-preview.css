@@ -12,6 +12,12 @@
 }
 
 .attachment-details .mgd-ail-media-preview-canvas {
+	/*
+	 * Der Canvas entspricht exakt der sichtbaren Bildfläche. Ein Prozentwert
+	 * bleibt deshalb bei jedem WordPress-Viewport, bei Hochformat und bei
+	 * unterschiedlich großen Mediencontainern gleichmäßig nach innen versetzt.
+	 */
+	--mgd-ail-media-preview-inset: 4%;
 	position: absolute;
 	z-index: 2;
 	pointer-events: none;
@@ -37,10 +43,10 @@
 	pointer-events: none;
 }
 
-.attachment-details .mgd-ail-media-preview.mgd-ail-position-top-left { top: 18px; left: 18px; }
-.attachment-details .mgd-ail-media-preview.mgd-ail-position-top-right { top: 18px; right: 18px; }
-.attachment-details .mgd-ail-media-preview.mgd-ail-position-bottom-left { bottom: 18px; left: 18px; }
-.attachment-details .mgd-ail-media-preview.mgd-ail-position-bottom-right { right: 18px; bottom: 18px; }
+.attachment-details .mgd-ail-media-preview.mgd-ail-position-top-left { top: var(--mgd-ail-media-preview-inset); left: var(--mgd-ail-media-preview-inset); }
+.attachment-details .mgd-ail-media-preview.mgd-ail-position-top-right { top: var(--mgd-ail-media-preview-inset); right: var(--mgd-ail-media-preview-inset); }
+.attachment-details .mgd-ail-media-preview.mgd-ail-position-bottom-left { bottom: var(--mgd-ail-media-preview-inset); left: var(--mgd-ail-media-preview-inset); }
+.attachment-details .mgd-ail-media-preview.mgd-ail-position-bottom-right { right: var(--mgd-ail-media-preview-inset); bottom: var(--mgd-ail-media-preview-inset); }
 
 .attachment-details .mgd-ail-media-preview.mgd-ail-theme-auto,
 .attachment-details .mgd-ail-media-preview.mgd-ail-theme-dark {
