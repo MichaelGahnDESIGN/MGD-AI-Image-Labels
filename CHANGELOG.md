@@ -2,6 +2,18 @@
 
 Alle wesentlichen Änderungen werden in diesem Dokument festgehalten. Versionen folgen dem Format `MAJOR.MINOR.PATCH`.
 
+## 0.6.6 – 8. August 2026
+
+### Verbessert
+
+- Die installierte Plugin-Liste im WordPress-Backend zeigt nun auch für die manuell oder über GitHub installierte Erweiterung das lokale MGD-Icon.
+- Die Mediathek-Vorschau richtet sich exakt an der sichtbaren Bildfläche statt am häufig deutlich höheren Mediencontainer aus. Alle vier Ecken funktionieren damit gleich.
+- Das Vorschau-Label liegt mit einem dezenten, einheitlichen Innenabstand von 18 Pixeln auf dem Bild.
+
+### Sicherheit und Datenschutz
+
+- Das Listen-Icon wird ausschließlich auf `plugins.php` und nur für die eigene Plugin-Zeile aus einer lokalen Paketdatei geladen.
+
 ## 0.6.5 – 7. August 2026
 
 ### Neu

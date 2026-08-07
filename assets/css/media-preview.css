@@ -5,8 +5,16 @@
  * weder das Vorschaubild noch das Frontend der Website und fangen keine Klicks
  * oder Tastaturereignisse ab.
  */
-.attachment-details .attachment-media-view {
+.attachment-details .attachment-media-view,
+.attachment-details .attachment-preview,
+.attachment-details .thumbnail {
 	position: relative;
+}
+
+.attachment-details .mgd-ail-media-preview-canvas {
+	position: absolute;
+	z-index: 2;
+	pointer-events: none;
 }
 
 .attachment-details .mgd-ail-media-preview {
@@ -15,7 +23,7 @@
 	display: inline-flex;
 	align-items: center;
 	box-sizing: border-box;
-	max-width: calc(100% - 24px);
+	max-width: calc(100% - 36px);
 	padding: 5px 9px;
 	border: 1px solid rgba(255, 255, 255, 0.72);
 	border-radius: 999px;
@@ -29,10 +37,10 @@
 	pointer-events: none;
 }
 
-.attachment-details .mgd-ail-media-preview.mgd-ail-position-top-left { top: 12px; left: 12px; }
-.attachment-details .mgd-ail-media-preview.mgd-ail-position-top-right { top: 12px; right: 12px; }
-.attachment-details .mgd-ail-media-preview.mgd-ail-position-bottom-left { bottom: 12px; left: 12px; }
-.attachment-details .mgd-ail-media-preview.mgd-ail-position-bottom-right { right: 12px; bottom: 12px; }
+.attachment-details .mgd-ail-media-preview.mgd-ail-position-top-left { top: 18px; left: 18px; }
+.attachment-details .mgd-ail-media-preview.mgd-ail-position-top-right { top: 18px; right: 18px; }
+.attachment-details .mgd-ail-media-preview.mgd-ail-position-bottom-left { bottom: 18px; left: 18px; }
+.attachment-details .mgd-ail-media-preview.mgd-ail-position-bottom-right { right: 18px; bottom: 18px; }
 
 .attachment-details .mgd-ail-media-preview.mgd-ail-theme-auto,
 .attachment-details .mgd-ail-media-preview.mgd-ail-theme-dark {

@@ -30,25 +30,49 @@
 		return scope.querySelector( '[name$="[' + name + ']"], [name="attachments[{{ID}}][' + name + ']"]' );
 	}
 
-	/** Findet ausschließlich die sichtbare Bildfläche des aktuell geöffneten Anhangs. */
+	/** Findet das tatsächlich sichtbare Bild und dessen stabilen Layout-Kontext. */
 	function getPreviewCanvas( scope ) {
 		if ( ! scope ) {
 			return null;
 		}
 
-		return scope.querySelector( '.attachment-media-view, .thumbnail, .media-modal .attachment-preview' );
+		var image = scope.querySelector( '.attachment-media-view img, .thumbnail img, .media-modal .attachment-preview img' );
+		var container = image ? image.closest( '.attachment-media-view, .thumbnail, .attachment-preview' ) : null;
+
+		return image && container ? { image: image, container: container } : null;
 	}
 
 	/** Entfernt eine nicht mehr benötigte Vorschau ohne Bild oder Formular zu verändern. */
-	function removePreview( canvas ) {
-		if ( ! canvas ) {
+	function removePreview( container ) {
+		if ( ! container ) {
 			return;
 		}
 
-		var preview = canvas.querySelector( '.mgd-ail-media-preview' );
+		var preview = container.querySelector( '.mgd-ail-media-preview-canvas' );
 		if ( preview ) {
 			preview.remove();
 		}
+	}
+
+	/**
+	 * Erstellt eine deckungsgleiche, interaktionsdurchlässige Ebene über dem
+	 * tatsächlichen Bild. Der Mediencontainer kann deutlich höher sein als das
+	 * Bild; deshalb wird er hier bewusst nicht als geometrische Referenz genutzt.
+	 */
+	function createCanvas( image, container ) {
+		var imageRect = image.getBoundingClientRect();
+		var containerRect = container.getBoundingClientRect();
+		var canvas = document.createElement( 'span' );
+
+		canvas.className = 'mgd-ail-media-preview-canvas';
+		canvas.setAttribute( 'aria-hidden', 'true' );
+		canvas.style.left = ( imageRect.left - containerRect.left ) + 'px';
+		canvas.style.top = ( imageRect.top - containerRect.top ) + 'px';
+		canvas.style.width = imageRect.width + 'px';
+		canvas.style.height = imageRect.height + 'px';
+		container.appendChild( canvas );
+
+		return canvas;
 	}
 
 	/** Erzeugt die dekorative Vorschau ausschließlich aus festen, lokalen Labeltexten. */
@@ -69,19 +93,19 @@
 		var statusField = getField( scope, 'mgd_ail_status' );
 		var positionField = getField( scope, 'mgd_ail_position' );
 		var themeField = getField( scope, 'mgd_ail_theme' );
-		var canvas = getPreviewCanvas( scope );
+		var previewContext = getPreviewCanvas( scope );
 
-		if ( ! statusField || ! positionField || ! themeField || ! canvas ) {
+		if ( ! statusField || ! positionField || ! themeField || ! previewContext ) {
 			return;
 		}
 
-		removePreview( canvas );
+		removePreview( previewContext.container );
 
 		if ( ! labels[ statusField.value ] ) {
 			return;
 		}
 
-		createPreview( canvas, statusField.value, positionField.value, themeField.value );
+		createPreview( createCanvas( previewContext.image, previewContext.container ), statusField.value, positionField.value, themeField.value );
 	}
 
 	/** Aktualisiert die Vorschau bei jeder lokalen Feldänderung – ohne Speicherung. */
@@ -110,7 +134,7 @@
 
 				/* Das eigene rein dekorative Label darf sich nicht selbst erneut
 				 * auslösen, wenn es in die Bildfläche eingefügt wird. */
-				if ( node.matches( '.mgd-ail-media-preview' ) || node.closest( '.mgd-ail-media-preview' ) ) {
+				if ( node.matches( '.mgd-ail-media-preview, .mgd-ail-media-preview-canvas' ) || node.closest( '.mgd-ail-media-preview, .mgd-ail-media-preview-canvas' ) ) {
 					return;
 				}
 
@@ -137,4 +161,11 @@
 
 	observer.observe( document.documentElement, { childList: true, subtree: true } );
 	Array.prototype.forEach.call( document.querySelectorAll( '.attachment-details' ), updatePreview );
+	document.addEventListener( 'load', function( event ) {
+		var image = event.target instanceof HTMLImageElement ? event.target : null;
+		var scope = image ? getScope( image ) : null;
+		if ( scope ) {
+			updatePreview( scope );
+		}
+	}, true );
 }() );
