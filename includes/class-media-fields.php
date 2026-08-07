@@ -113,7 +113,7 @@ final class MGD_AI_Image_Labels_Media_Fields {
 			return;
 		}
 
-		self::enqueue_save_script();
+		self::enqueue_media_assets();
 	}
 
 	/**
@@ -130,11 +130,17 @@ final class MGD_AI_Image_Labels_Media_Fields {
 			return;
 		}
 
-		self::enqueue_save_script();
+		self::enqueue_media_assets();
 	}
 
-	/** Lädt den unabhängigen, ohne jQuery arbeitenden Medien-Speicherhandler. */
-	private static function enqueue_save_script(): void {
+	/**
+	 * Lädt die voneinander getrennten lokalen Medienwerkzeuge.
+	 *
+	 * Der Speichern-Handler und die Vorschau sind absichtlich zwei Dateien:
+	 * Die Vorschau bleibt dadurch rein visuell und kann niemals versehentlich
+	 * den geschützten Speichervorgang oder seine Berechtigungsprüfung umgehen.
+	 */
+	private static function enqueue_media_assets(): void {
 
 		wp_enqueue_script(
 			'mgd-ail-media-save',
@@ -142,6 +148,21 @@ final class MGD_AI_Image_Labels_Media_Fields {
 			array(),
 			MGD_AI_IMAGE_LABELS_VERSION,
 			true
+		);
+
+		wp_enqueue_script(
+			'mgd-ail-media-preview',
+			MGD_AI_IMAGE_LABELS_URL . 'assets/js/media-preview.js',
+			array(),
+			MGD_AI_IMAGE_LABELS_VERSION,
+			true
+		);
+
+		wp_enqueue_style(
+			'mgd-ail-media-preview',
+			MGD_AI_IMAGE_LABELS_URL . 'assets/css/media-preview.css',
+			array(),
+			MGD_AI_IMAGE_LABELS_VERSION
 		);
 	}
 

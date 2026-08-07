@@ -65,6 +65,22 @@ function wp_get_attachment_metadata( int $attachment_id ): array {
 		'sizes' => array(
 			'large' => array(
 				'file' => 'schreibmaschine-980x551.jpg',
+				/*
+				 * Bildoptimierer oder WordPress können für dieselbe Größe eine
+				 * moderne Auslieferung hinterlegen. Die Runtime darf die Datei
+				 * nur aus diesen geprüften Anhangsmetadaten übernehmen.
+				 */
+				'sources' => array(
+					'image/webp' => array(
+						'source_url' => 'https://beispiel.test/wp-content/uploads/2026/03/schreibmaschine-980x551.webp',
+					),
+					/* Eine fremde Quelle darf nie Teil der Kennzeichnungs-Map werden. */
+					'image/avif' => array(
+						'source_url' => 'https://cdn-fremd.example/schreibmaschine-980x551.avif',
+					),
+					/* Ein unvollständiger Metadatensatz darf keinen Verzeichnispfad erzeugen. */
+					'image/jxl' => array(),
+				),
 			),
 		),
 	);
@@ -111,6 +127,12 @@ function mgd_ail_renderer_assert_same( $expected, $actual, string $message ): vo
 function mgd_ail_renderer_assert_contains( string $needle, string $haystack, string $message ): void {
 	if ( false === strpos( $haystack, $needle ) ) {
 		throw new RuntimeException( $message . ' Fehlend: ' . $needle );
+	}
+}
+
+function mgd_ail_renderer_assert_not_contains( string $needle, string $haystack, string $message ): void {
+	if ( false !== strpos( $haystack, $needle ) ) {
+		throw new RuntimeException( $message . ' Unerwartet: ' . $needle );
 	}
 }
 
@@ -272,6 +294,13 @@ MGD_AI_Image_Labels_Image_Renderer::render_legacy_divi_runtime();
 $runtime_output = (string) ob_get_clean();
 mgd_ail_renderer_assert_contains( 'wp-content\\/uploads\\/2026\\/03\\/schreibmaschine.jpg', $runtime_output, 'Der Frontend-Fallback kennt den kanonischen Upload-Pfad des gekennzeichneten Bildes.' );
 mgd_ail_renderer_assert_contains( 'wp-content\\/uploads\\/2026\\/03\\/schreibmaschine-980x551.jpg', $runtime_output, 'Der Frontend-Fallback kennt die von WordPress erzeugte Bildgröße für Beitragsbilder.' );
+mgd_ail_renderer_assert_contains( 'wp-content\\/uploads\\/2026\\/03\\/schreibmaschine-980x551.webp', $runtime_output, 'Der Frontend-Fallback kennt auch modern ausgelieferte, in den WordPress-Metadaten hinterlegte Bildquellen.' );
+mgd_ail_renderer_assert_not_contains( 'cdn-fremd.example', $runtime_output, 'Fremde Bildquellen dürfen niemals in die lokale Kennzeichnungs-Map gelangen.' );
+mgd_ail_renderer_assert_not_contains( 'schreibmaschine-980x551.avif', $runtime_output, 'Der Pfad einer fremden Bildquelle darf nicht mit lokalen Uploads verwechselt werden.' );
 mgd_ail_renderer_assert_contains( "document.querySelectorAll('img')", $runtime_output, 'Der Frontend-Fallback prüft auch Theme- und Archivbilder ohne Divi-spezifische Anhangsklasse.' );
+mgd_ail_renderer_assert_contains( 'MutationObserver', $runtime_output, 'Der Frontend-Fallback muss nachgeladene Divi-Blogkarten und Ajax-Archive erneut prüfen.' );
+mgd_ail_renderer_assert_contains( 'srcset', $runtime_output, 'Der Frontend-Fallback muss auch die vom Browser aus srcset gewählte WordPress-Bildgröße exakt zuordnen.' );
+mgd_ail_renderer_assert_contains( 'image.currentSrc || image.src', $runtime_output, 'Der Frontend-Fallback muss die tatsächlich gerenderte responsive Bildquelle verwenden.' );
+mgd_ail_renderer_assert_contains( "image.closest('picture') || image", $runtime_output, 'Ein responsives picture-Element muss vollständig im Badge-Kontext bleiben.' );
 
 echo "PASS: Barrierefreie KI-Badges werden rein und sicher gerendert.\n";

@@ -72,7 +72,8 @@ final class MGD_AI_Image_Labels_Image_Renderer {
 				'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Es werden nur explizit gekennzeichnete Medien gelesen.
 					array(
 						'key'     => MGD_AI_Image_Labels_Attachment_Meta::STATUS_KEY,
-						'compare' => 'EXISTS',
+						'value'   => 'none',
+						'compare' => '!=',
 					),
 				),
 			)
@@ -126,37 +127,63 @@ final class MGD_AI_Image_Labels_Image_Renderer {
 		(function () {
 			'use strict';
 			const labels = <?php echo $json; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Sicheres JSON mit Hex-Escaping für einen JavaScript-Kontext. ?>;
-			const getUploadPath = (image) => {
+			/*
+			 * Ein responsive Bild kann im Markup ein Original, im srcset aber eine
+			 * andere WordPress-Größe besitzen. Beide Wege werden nur als exakte
+			 * lokale Upload-Pfade geprüft; eine ID wird niemals aus der URL geraten.
+			 */
+			const getUploadPath = (url) => {
 				try {
-					return new URL(image.currentSrc || image.src, document.baseURI).pathname;
+					return new URL(url, document.baseURI).pathname;
 				} catch (error) {
 					return '';
 				}
 			};
+			const getImagePaths = (image) => {
+				const sources = [image.currentSrc || image.src, image.src];
+				const srcset = image.getAttribute('srcset') || '';
+				for (const candidate of srcset.split(',')) {
+					const url = candidate.trim().split(/\s+/)[0];
+					if (url) sources.push(url);
+				}
+				return [...new Set(sources.map(getUploadPath).filter(Boolean))];
+			};
+			const getConfiguration = (image) => {
+				for (const path of getImagePaths(image)) {
+					if (labels[path]) return labels[path];
+				}
+				return null;
+			};
 			const createSafeWrapper = (image) => {
-				const diviWrap = image.closest('.et_pb_image_wrap');
+				/* Ein responsive Bild darf nie allein aus einem picture-Element
+				 * herausverschoben werden. Der ganze picture-Container bleibt
+				 * zusammen mit seinen source-Varianten im relativen Kontext. */
+				const mediaElement = image.closest('picture') || image;
+				const diviWrap = mediaElement.closest('.et_pb_image_wrap');
 				if (diviWrap) return diviWrap;
 
 				/* Ein Archivbild liegt häufig allein in einem Link. In diesem Fall
 				 * bleibt der Link der Layoutkontext; Klick- und Tastaturverhalten
 				 * bleiben vollständig beim Theme. */
-				const link = image.closest('a');
+				const link = mediaElement.closest('a');
 				if (link && 1 === link.querySelectorAll('img').length && '' === link.textContent.trim()) return link;
 
 				/* Einzelbeiträge enthalten das Bild oft direkt neben Überschrift und
 				 * Metadaten. Ein eigener, nur um dieses Bild gelegter Wrapper verhindert,
 				 * dass sich die Badge-Ecke versehentlich auf den ganzen Beitrag bezieht. */
+				if (!mediaElement.parentNode) return null;
 				const wrapper = document.createElement('span');
 				wrapper.className = 'mgd-ail-image-wrapper';
-				image.parentNode.insertBefore(wrapper, image);
-				wrapper.appendChild(image);
+				mediaElement.parentNode.insertBefore(wrapper, mediaElement);
+				wrapper.appendChild(mediaElement);
 				return wrapper;
 			};
-			for (const image of document.querySelectorAll('img')) {
-				const config = labels[getUploadPath(image)];
-				if (!config) continue;
+			const applyLabel = (image) => {
+				if (!(image instanceof HTMLImageElement)) return;
+				const config = getConfiguration(image);
+				if (!config) return;
 				const wrap = createSafeWrapper(image);
-				if (!wrap || wrap.querySelector('.mgd-ail-badge')) continue;
+				if (!wrap || wrap.querySelector('.mgd-ail-badge')) return;
 				wrap.classList.add('mgd-ail-image-wrapper');
 				const badge = document.createElement('span');
 				badge.className = 'mgd-ail-badge mgd-ail-position-' + config.position + ' mgd-ail-theme-' + config.theme;
@@ -172,8 +199,28 @@ final class MGD_AI_Image_Labels_Image_Renderer {
 					badge.appendChild(detail);
 				}
 				wrap.appendChild(badge);
-			}
-		}());
+			};
+			const applyAllLabels = (root = document) => {
+				const images = root instanceof HTMLImageElement ? [root] : root.querySelectorAll('img');
+				for (const image of images) applyLabel(image);
+			};
+			/* Die erste Prüfung deckt Einzelbeiträge und bereits sichtbare Karten ab. */
+			for (const image of document.querySelectorAll('img')) applyLabel(image);
+			/* Ajax-Pagination und Divi laden weitere Beitragskarten nach. Der lokale
+			 * Beobachter prüft nur neu hinzugefügte img-Knoten und überträgt nichts. */
+			new MutationObserver((mutations) => {
+				for (const mutation of mutations) {
+					for (const node of mutation.addedNodes) {
+						if (node instanceof Element) applyAllLabels(node);
+					}
+				}
+			}).observe(document.documentElement, {childList: true, subtree: true});
+			/* Manche Lazy-Load-Plugins setzen die endgültige responsive Quelle erst
+			 * beim Laden. Die Capture-Phase erreicht auch Bilder in Divi-Modulen. */
+			document.addEventListener('load', (event) => {
+				if (event.target instanceof HTMLImageElement) applyLabel(event.target);
+			}, true);
+			}());
 		</script>
 		<?php
 	}
@@ -231,9 +278,69 @@ final class MGD_AI_Image_Labels_Image_Renderer {
 			if ( '' !== $path ) {
 				$paths[] = $path;
 			}
+
+			/*
+			 * Moderne Bildauslieferung (beispielsweise WebP oder AVIF) kann
+			 * zusätzliche Quellen an derselben WordPress-Größe hinterlegen.
+			 * Wir akzeptieren dabei ausschließlich explizite, lokale Werte aus
+			 * den Medienmetadaten: eine vollständige source_url oder eine Datei
+			 * relativ zum bereits bekannten Upload-Verzeichnis. Externe URLs und
+			 * freie Bildadressen werden weder erraten noch in die Runtime gegeben.
+			 */
+			if ( ! is_array( $size['sources'] ?? null ) ) {
+				continue;
+			}
+
+			foreach ( $size['sources'] as $source ) {
+				if ( ! is_array( $source ) ) {
+					continue;
+				}
+
+				$source_url  = is_string( $source['source_url'] ?? null ) ? $source['source_url'] : '';
+				$source_file = is_string( $source['file'] ?? null ) ? ltrim( $source['file'], '/' ) : '';
+
+				if ( '' !== $source_url ) {
+					$source_path = self::get_local_upload_source_path( $source_url, $base_url );
+				} elseif ( '' !== $source_file ) {
+					$source_path = self::get_url_path( $base_url . '/' . ( '' === $directory ? '' : $directory . '/' ) . $source_file );
+				} else {
+					continue;
+				}
+
+				if ( '' !== $source_path ) {
+					$paths[] = $source_path;
+				}
+			}
 		}
 
 		return array_values( array_unique( $paths ) );
+	}
+
+	/**
+	 * Akzeptiert eine moderne Bildquelle nur aus dem lokalen WordPress-Upload.
+	 *
+	 * `source_url` kann technisch vollständig oder relativ sein. Eine vollständige
+	 * URL muss denselben Host wie die WordPress-Upload-Basis verwenden und ihr
+	 * Pfad muss innerhalb dieser Basis liegen. So kann eine fremde CDN- oder
+	 * Drittanbieter-URL niemals versehentlich mit einem lokalen Bildlabel
+	 * verknüpft werden.
+	 */
+	private static function get_local_upload_source_path( string $source_url, string $base_url ): string {
+		$source_path = self::get_url_path( $source_url );
+		$upload_path = self::get_url_path( $base_url . '/' );
+		$source_host = parse_url( $source_url, PHP_URL_HOST );
+		$upload_host = parse_url( $base_url, PHP_URL_HOST );
+
+		if (
+			'' === $source_path ||
+			'' === $upload_path ||
+			0 !== strpos( $source_path, $upload_path ) ||
+			( is_string( $source_host ) && '' !== $source_host && $source_host !== $upload_host )
+		) {
+			return '';
+		}
+
+		return $source_path;
 	}
 
 	/**

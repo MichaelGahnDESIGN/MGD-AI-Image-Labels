@@ -2,6 +2,22 @@
 
 Alle wesentlichen Änderungen werden in diesem Dokument festgehalten. Versionen folgen dem Format `MAJOR.MINOR.PATCH`.
 
+## 0.6.5 – 7. August 2026
+
+### Neu
+
+- Die WordPress-Mediathek zeigt für ein geöffnetes Bild eine rein lokale Live-Vorschau des Labels. Sie reagiert sofort auf Status, Ecke und Glasvariante, speichert aber niemals selbstständig.
+
+### Behoben
+
+- Der Frontend-Fallback erkennt auch nachgeladene Divi-Blogkarten, Lazy-Loading und responsive Bildquellen aus `srcset`.
+- Beitragsbilder und Blog-Thumbnails werden zusätzlich über in den WordPress-Metadaten hinterlegte WebP- und AVIF-Quellen eindeutig erkannt.
+
+### Sicherheit und Datenschutz
+
+- Die Vorschau sendet keine Anfrage, verändert keine Bilddatei und nutzt nur feste, lokale Labeltexte.
+- Die Frontend-Zuordnung akzeptiert weiterhin ausschließlich exakte lokale Upload-Pfade eines ausdrücklich gekennzeichneten Anhangs.
+
 ## 0.6.4 – 5. August 2026
 
 ### Behoben

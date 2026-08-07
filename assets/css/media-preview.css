@@ -1,0 +1,60 @@
+/**
+ * Lokale Gestaltung der rein visuellen Medienvorschau.
+ *
+ * Die Regeln sind strikt auf den WordPress-Medienmodal begrenzt. Sie ändern
+ * weder das Vorschaubild noch das Frontend der Website und fangen keine Klicks
+ * oder Tastaturereignisse ab.
+ */
+.attachment-details .attachment-media-view {
+	position: relative;
+}
+
+.attachment-details .mgd-ail-media-preview {
+	position: absolute;
+	z-index: 2;
+	display: inline-flex;
+	align-items: center;
+	box-sizing: border-box;
+	max-width: calc(100% - 24px);
+	padding: 5px 9px;
+	border: 1px solid rgba(255, 255, 255, 0.72);
+	border-radius: 999px;
+	box-shadow: 0 5px 18px rgba(0, 0, 0, 0.32);
+	font-family: Arial, "Open Sans", sans-serif;
+	font-size: 6px;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	line-height: 1.2;
+	text-transform: uppercase;
+	pointer-events: none;
+}
+
+.attachment-details .mgd-ail-media-preview.mgd-ail-position-top-left { top: 12px; left: 12px; }
+.attachment-details .mgd-ail-media-preview.mgd-ail-position-top-right { top: 12px; right: 12px; }
+.attachment-details .mgd-ail-media-preview.mgd-ail-position-bottom-left { bottom: 12px; left: 12px; }
+.attachment-details .mgd-ail-media-preview.mgd-ail-position-bottom-right { right: 12px; bottom: 12px; }
+
+.attachment-details .mgd-ail-media-preview.mgd-ail-theme-auto,
+.attachment-details .mgd-ail-media-preview.mgd-ail-theme-dark {
+	background: rgba(20, 23, 29, 0.76);
+	border-color: rgba(255, 255, 255, 0.72);
+	color: #ffffff;
+	-webkit-backdrop-filter: blur(10px) saturate(130%);
+	backdrop-filter: blur(10px) saturate(130%);
+}
+
+.attachment-details .mgd-ail-media-preview.mgd-ail-theme-light {
+	background: rgba(255, 255, 255, 0.78);
+	border-color: rgba(25, 28, 33, 0.28);
+	box-shadow: 0 5px 18px rgba(0, 0, 0, 0.2);
+	color: #15171b;
+	-webkit-backdrop-filter: blur(10px) saturate(125%);
+	backdrop-filter: blur(10px) saturate(125%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.attachment-details .mgd-ail-media-preview {
+		transition: none;
+		animation: none;
+	}
+}

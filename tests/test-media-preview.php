@@ -1,0 +1,44 @@
+<?php
+/**
+ * Regressionstest für die rein visuelle Vorschau im WordPress-Medienmodal.
+ *
+ * Die Vorschau darf nie Medienmetadaten speichern oder an externe Dienste
+ * senden. Sie liest ausschließlich die drei sichtbaren Auswahlfelder und
+ * zeichnet das Kennzeichen als temporären DOM-Knoten über das Vorschaubild.
+ */
+
+declare(strict_types=1);
+
+$script = file_get_contents( dirname( __DIR__ ) . '/assets/js/media-preview.js' );
+$style  = file_get_contents( dirname( __DIR__ ) . '/assets/css/media-preview.css' );
+$fields = file_get_contents( dirname( __DIR__ ) . '/includes/class-media-fields.php' );
+
+if ( false === $script || false === $style || false === $fields ) {
+	throw new RuntimeException( 'Die Dateien für die Medienvorschau konnten nicht gelesen werden.' );
+}
+
+/** Prüft eine bewusst konkrete technische Eigenschaft der lokalen Vorschau. */
+function mgd_ail_preview_assert_contains( string $needle, string $haystack, string $message ): void {
+	if ( false === strpos( $haystack, $needle ) ) {
+		throw new RuntimeException( $message . ' Fehlend: ' . $needle );
+	}
+}
+
+mgd_ail_preview_assert_contains( 'mgd-ail-media-preview', $script, 'Die Vorschau braucht einen eindeutig getrennten DOM-Knoten.' );
+mgd_ail_preview_assert_contains( 'AI PARTIALLY GENERATED', $script, 'Die Vorschau muss alle sichtbaren Kennzeichnungsarten abbilden.' );
+mgd_ail_preview_assert_contains( "addEventListener( 'change'", $script, 'Die Vorschau muss beim Ändern einer Auswahl sofort reagieren.' );
+mgd_ail_preview_assert_contains( "node.closest( '.attachment-details' )", $script, 'Ein Bildwechsel im bestehenden WordPress-Medienmodal muss die Vorschau erneut aufbauen.' );
+mgd_ail_preview_assert_contains( "node.closest( '.mgd-ail-media-preview' )", $script, 'Die eigene Vorschau darf keinen Beobachter-Kreislauf auslösen.' );
+mgd_ail_preview_assert_contains( 'textContent', $script, 'Der sichtbare Labeltext darf nicht als unsicheres HTML eingefügt werden.' );
+mgd_ail_preview_assert_contains( 'aria-hidden', $script, 'Die rein dekorative Admin-Vorschau darf Screenreader nicht doppelt informieren.' );
+
+if ( false !== strpos( $script, 'XMLHttpRequest' ) || false !== strpos( $script, 'fetch(' ) ) {
+	throw new RuntimeException( 'Die Medienvorschau darf keine Anfrage auslösen oder etwas speichern.' );
+}
+
+mgd_ail_preview_assert_contains( '.mgd-ail-media-preview', $style, 'Die Vorschau benötigt eine eigene, auf das Medienmodal begrenzte Gestaltung.' );
+mgd_ail_preview_assert_contains( 'pointer-events: none', $style, 'Das Vorschau-Label darf Bedienung und Bildauswahl nicht überdecken.' );
+mgd_ail_preview_assert_contains( 'media-preview.js', $fields, 'Die Vorschau muss in WordPress und im Divi-5-Medienmodal geladen werden.' );
+mgd_ail_preview_assert_contains( 'media-preview.css', $fields, 'Die lokale Vorschau-Gestaltung muss gezielt mitgeladen werden.' );
+
+echo "PASS: Die Medienvorschau bleibt lokal, zugänglich und rein visuell.\n";
