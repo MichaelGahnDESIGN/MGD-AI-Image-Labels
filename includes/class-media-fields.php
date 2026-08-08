@@ -141,6 +141,22 @@ final class MGD_AI_Image_Labels_Media_Fields {
 	 * den geschützten Speichervorgang oder seine Berechtigungsprüfung umgehen.
 	 */
 	private static function enqueue_media_assets(): void {
+		/*
+		 * Die Vorschau erhält absichtlich das unveränderte Frontend-Stylesheet.
+		 * Dadurch sind Schrift, Glasoptik, Radius, Schatten und der tatsächliche
+		 * gespeicherte Abstand exakt identisch zur späteren Website-Ausgabe.
+		 */
+		wp_enqueue_style(
+			'mgd-ail-media-preview-frontend',
+			MGD_AI_IMAGE_LABELS_URL . 'assets/css/frontend.css',
+			array(),
+			MGD_AI_IMAGE_LABELS_VERSION
+		);
+
+		wp_add_inline_style(
+			'mgd-ail-media-preview-frontend',
+			MGD_AI_Image_Labels_Plugin_Options::get_media_preview_css_variables()
+		);
 
 		wp_enqueue_script(
 			'mgd-ail-media-save',
@@ -161,7 +177,7 @@ final class MGD_AI_Image_Labels_Media_Fields {
 		wp_enqueue_style(
 			'mgd-ail-media-preview',
 			MGD_AI_IMAGE_LABELS_URL . 'assets/css/media-preview.css',
-			array(),
+			array( 'mgd-ail-media-preview-frontend' ),
 			MGD_AI_IMAGE_LABELS_VERSION
 		);
 	}

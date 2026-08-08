@@ -2,6 +2,17 @@
 
 Alle wesentlichen Änderungen werden in diesem Dokument festgehalten. Versionen folgen dem Format `MAJOR.MINOR.PATCH`.
 
+## 0.6.8 – 8. August 2026
+
+### Behoben
+
+- Die Vorschau im WordPress-Medienmodal verwendet nun dieselbe CSS-Klasse, dieselben gespeicherten Darstellungswerte und denselben Bildbezug wie die Ausgabe im Frontend.
+- Bei Änderungen von Viewport, Zoom oder Modalgröße vermisst ein lokaler Beobachter die sichtbare Bildfläche neu. Das Label bleibt damit in der gewählten Ecke des Bilds statt an einer alten Modalposition.
+
+### Sicherheit und Datenschutz
+
+- Die Live-Vorschau bleibt eine ausschließlich lokale, nicht speichernde Darstellung und verwendet keine externen Ressourcen.
+
 ## 0.6.7 – 8. August 2026
 
 ### Verbessert

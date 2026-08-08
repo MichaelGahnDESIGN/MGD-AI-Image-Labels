@@ -119,17 +119,37 @@ final class MGD_AI_Image_Labels_Plugin_Options {
 	 * Damit kann keine gespeicherte Zeichenfolge unverändert in CSS gelangen.
 	 */
 	public static function get_css_variables(): string {
+		return self::get_css_variables_for_selector( '.mgd-ail-image-wrapper' );
+	}
+
+	/**
+	 * Liefert dieselben geprüften Darstellungswerte für die rein lokale
+	 * Medienvorschau. Der Selektor bleibt bewusst auf den temporären Canvas
+	 * begrenzt, damit die WordPress-Administration keine anderen Elemente
+	 * gestaltet und die Vorschau dem späteren Frontend dennoch exakt entspricht.
+	 */
+	public static function get_media_preview_css_variables(): string {
+		return self::get_css_variables_for_selector( '.mgd-ail-media-preview-canvas' );
+	}
+
+	/**
+	 * Erzeugt aus den bereits bereinigten Optionen einen engen CSS-Variablenblock.
+	 * Der Selektor ist ausschließlich aus dem eigenen Quellcode übergeben und
+	 * niemals eine redaktionelle oder externe Eingabe.
+	 */
+	private static function get_css_variables_for_selector( string $selector ): string {
 		$options = self::get_options();
 
 		return sprintf(
-			'.mgd-ail-image-wrapper {%1$s'
-			. '  --mgd-ail-font-size: %2$dpx;%1$s'
-			. '  --mgd-ail-offset: %3$dpx;%1$s'
-			. '  --mgd-ail-padding-y: %4$dpx;%1$s'
-			. '  --mgd-ail-padding-x: %5$dpx;%1$s'
-			. '  --mgd-ail-radius: %6$dpx;%1$s'
-			. '  --mgd-ail-blur: %7$dpx;%1$s'
+			'%1$s {%2$s'
+			. '  --mgd-ail-font-size: %3$dpx;%2$s'
+			. '  --mgd-ail-offset: %4$dpx;%2$s'
+			. '  --mgd-ail-padding-y: %5$dpx;%2$s'
+			. '  --mgd-ail-padding-x: %6$dpx;%2$s'
+			. '  --mgd-ail-radius: %7$dpx;%2$s'
+			. '  --mgd-ail-blur: %8$dpx;%2$s'
 			. '}',
+			$selector,
 			"\n",
 			(int) $options['font_size'],
 			(int) $options['offset'],

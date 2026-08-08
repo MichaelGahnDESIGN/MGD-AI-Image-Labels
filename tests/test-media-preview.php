@@ -12,8 +12,9 @@ declare(strict_types=1);
 $script = file_get_contents( dirname( __DIR__ ) . '/assets/js/media-preview.js' );
 $style  = file_get_contents( dirname( __DIR__ ) . '/assets/css/media-preview.css' );
 $fields = file_get_contents( dirname( __DIR__ ) . '/includes/class-media-fields.php' );
+$options = file_get_contents( dirname( __DIR__ ) . '/includes/class-plugin-options.php' );
 
-if ( false === $script || false === $style || false === $fields ) {
+if ( false === $script || false === $style || false === $fields || false === $options ) {
 	throw new RuntimeException( 'Die Dateien für die Medienvorschau konnten nicht gelesen werden.' );
 }
 
@@ -27,6 +28,9 @@ function mgd_ail_preview_assert_contains( string $needle, string $haystack, stri
 mgd_ail_preview_assert_contains( 'mgd-ail-media-preview', $script, 'Die Vorschau braucht einen eindeutig getrennten DOM-Knoten.' );
 mgd_ail_preview_assert_contains( 'mgd-ail-media-preview-canvas', $script, 'Die Vorschau braucht eine eigene, auf das sichtbare Bild begrenzte Zeichenfläche.' );
 mgd_ail_preview_assert_contains( 'getBoundingClientRect', $script, 'Die Vorschau muss sich an den tatsächlichen Bildmaßen statt am hohen Mediencontainer ausrichten.' );
+mgd_ail_preview_assert_contains( 'ResizeObserver', $script, 'Eine geöffnete Vorschau muss sich auch nach einer Größenänderung des WordPress-Modals erneut an der Bildfläche ausrichten.' );
+mgd_ail_preview_assert_contains( "window.addEventListener( 'resize'", $script, 'Ein Viewport-Wechsel muss die Vorschau ohne Neuladen neu berechnen.' );
+mgd_ail_preview_assert_contains( 'mgd-ail-badge', $script, 'Die Vorschau muss dieselbe Badge-Klasse wie die Frontend-Ausgabe verwenden.' );
 mgd_ail_preview_assert_contains( 'AI PARTIALLY GENERATED', $script, 'Die Vorschau muss alle sichtbaren Kennzeichnungsarten abbilden.' );
 mgd_ail_preview_assert_contains( "addEventListener( 'change'", $script, 'Die Vorschau muss beim Ändern einer Auswahl sofort reagieren.' );
 mgd_ail_preview_assert_contains( "node.closest( '.attachment-details' )", $script, 'Ein Bildwechsel im bestehenden WordPress-Medienmodal muss die Vorschau erneut aufbauen.' );
@@ -40,10 +44,11 @@ if ( false !== strpos( $script, 'XMLHttpRequest' ) || false !== strpos( $script,
 
 mgd_ail_preview_assert_contains( '.mgd-ail-media-preview', $style, 'Die Vorschau benötigt eine eigene, auf das Medienmodal begrenzte Gestaltung.' );
 mgd_ail_preview_assert_contains( '.mgd-ail-media-preview-canvas', $style, 'Die Vorschaufläche muss exakt über dem sichtbaren Bild positioniert werden können.' );
-mgd_ail_preview_assert_contains( '--mgd-ail-media-preview-inset: 4%;', $style, 'Der Innenabstand muss prozentual zur tatsächlichen Bildfläche berechnet werden.' );
-mgd_ail_preview_assert_contains( 'var(--mgd-ail-media-preview-inset)', $style, 'Alle vier Vorschau-Ecken müssen denselben prozentualen Innenabstand verwenden.' );
 mgd_ail_preview_assert_contains( 'pointer-events: none', $style, 'Das Vorschau-Label darf Bedienung und Bildauswahl nicht überdecken.' );
 mgd_ail_preview_assert_contains( 'media-preview.js', $fields, 'Die Vorschau muss in WordPress und im Divi-5-Medienmodal geladen werden.' );
 mgd_ail_preview_assert_contains( 'media-preview.css', $fields, 'Die lokale Vorschau-Gestaltung muss gezielt mitgeladen werden.' );
+mgd_ail_preview_assert_contains( 'assets/css/frontend.css', $fields, 'Die Vorschau muss das originale Frontend-Stylesheet des Plugins verwenden.' );
+mgd_ail_preview_assert_contains( 'get_media_preview_css_variables', $fields, 'Die Vorschau muss exakt dieselben gespeicherten Darstellungswerte wie das Frontend erhalten.' );
+mgd_ail_preview_assert_contains( 'function get_media_preview_css_variables', $options, 'Die Frontend-Variablen brauchen eine ausdrücklich auf die lokale Vorschau begrenzte Variante.' );
 
 echo "PASS: Die Medienvorschau bleibt lokal, zugänglich und rein visuell.\n";

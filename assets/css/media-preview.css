@@ -12,58 +12,18 @@
 }
 
 .attachment-details .mgd-ail-media-preview-canvas {
-	/*
-	 * Der Canvas entspricht exakt der sichtbaren Bildfläche. Ein Prozentwert
-	 * bleibt deshalb bei jedem WordPress-Viewport, bei Hochformat und bei
-	 * unterschiedlich großen Mediencontainern gleichmäßig nach innen versetzt.
-	 */
-	--mgd-ail-media-preview-inset: 4%;
 	position: absolute;
 	z-index: 2;
 	pointer-events: none;
 }
 
+/*
+ * Alle visuellen Badge-Regeln kommen bewusst aus frontend.css. Dadurch wird
+ * dieselbe Schrift, Glasoptik, der konfigurierte Pixel-Abstand und dieselbe
+ * responsive Begrenzung verwendet wie später im Website-Frontend.
+ */
 .attachment-details .mgd-ail-media-preview {
-	position: absolute;
-	z-index: 2;
-	display: inline-flex;
-	align-items: center;
-	box-sizing: border-box;
-	max-width: calc(100% - 36px);
-	padding: 5px 9px;
-	border: 1px solid rgba(255, 255, 255, 0.72);
-	border-radius: 999px;
-	box-shadow: 0 5px 18px rgba(0, 0, 0, 0.32);
-	font-family: Arial, "Open Sans", sans-serif;
-	font-size: 6px;
-	font-weight: 700;
-	letter-spacing: 0.06em;
-	line-height: 1.2;
-	text-transform: uppercase;
 	pointer-events: none;
-}
-
-.attachment-details .mgd-ail-media-preview.mgd-ail-position-top-left { top: var(--mgd-ail-media-preview-inset); left: var(--mgd-ail-media-preview-inset); }
-.attachment-details .mgd-ail-media-preview.mgd-ail-position-top-right { top: var(--mgd-ail-media-preview-inset); right: var(--mgd-ail-media-preview-inset); }
-.attachment-details .mgd-ail-media-preview.mgd-ail-position-bottom-left { bottom: var(--mgd-ail-media-preview-inset); left: var(--mgd-ail-media-preview-inset); }
-.attachment-details .mgd-ail-media-preview.mgd-ail-position-bottom-right { right: var(--mgd-ail-media-preview-inset); bottom: var(--mgd-ail-media-preview-inset); }
-
-.attachment-details .mgd-ail-media-preview.mgd-ail-theme-auto,
-.attachment-details .mgd-ail-media-preview.mgd-ail-theme-dark {
-	background: rgba(20, 23, 29, 0.76);
-	border-color: rgba(255, 255, 255, 0.72);
-	color: #ffffff;
-	-webkit-backdrop-filter: blur(10px) saturate(130%);
-	backdrop-filter: blur(10px) saturate(130%);
-}
-
-.attachment-details .mgd-ail-media-preview.mgd-ail-theme-light {
-	background: rgba(255, 255, 255, 0.78);
-	border-color: rgba(25, 28, 33, 0.28);
-	box-shadow: 0 5px 18px rgba(0, 0, 0, 0.2);
-	color: #15171b;
-	-webkit-backdrop-filter: blur(10px) saturate(125%);
-	backdrop-filter: blur(10px) saturate(125%);
 }
 
 @media (prefers-reduced-motion: reduce) {

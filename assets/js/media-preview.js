@@ -15,6 +15,8 @@
 		modified: 'AI MODIFIED',
 		deepfake: 'AI DEEPFAKE'
 	};
+	var observedImages = new WeakSet();
+	var refreshFrame = 0;
 
 	/** Ermittelt den zum aktiven Bild gehörenden Medien-Detailbereich. */
 	function getScope( element ) {
@@ -80,7 +82,9 @@
 		var preview = document.createElement( 'span' );
 		var text = document.createElement( 'span' );
 
-		preview.className = 'mgd-ail-media-preview mgd-ail-position-' + position + ' mgd-ail-theme-' + theme;
+		/* Die zusätzliche Frontend-Klasse sorgt dafür, dass diese Vorschau
+		 * dieselbe Gestaltung und dieselben Positionsregeln wie die Website nutzt. */
+		preview.className = 'mgd-ail-media-preview mgd-ail-badge mgd-ail-position-' + position + ' mgd-ail-theme-' + theme;
 		preview.setAttribute( 'aria-hidden', 'true' );
 		text.className = 'mgd-ail-media-preview__text';
 		text.textContent = labels[ status ];
@@ -99,6 +103,8 @@
 			return;
 		}
 
+		observeImageGeometry( previewContext.image );
+
 		removePreview( previewContext.container );
 
 		if ( ! labels[ statusField.value ] ) {
@@ -106,6 +112,39 @@
 		}
 
 		createPreview( createCanvas( previewContext.image, previewContext.container ), statusField.value, positionField.value, themeField.value );
+	}
+
+	/** Plant eine Neuvermessung erst für den nächsten sichtbaren Browser-Frame. */
+	function schedulePreviewUpdate( scope ) {
+		if ( ! scope ) {
+			return;
+		}
+
+		window.cancelAnimationFrame( refreshFrame );
+		refreshFrame = window.requestAnimationFrame( function() {
+			updatePreview( scope );
+		} );
+	}
+
+	/**
+	 * Das WordPress-Medienmodal kann bei Sidebar-, Zoom- oder Viewportwechseln
+	 * sein Bild skalieren, ohne die Anhangsfelder neu zu erzeugen. Der Observer
+	 * misst dann die echte Bildfläche noch einmal und hält Canvas und Badge
+	 * deckungsgleich zur späteren Frontend-Ausgabe.
+	 */
+	var previewResizeObserver = new ResizeObserver( function( entries ) {
+		entries.forEach( function( entry ) {
+			schedulePreviewUpdate( getScope( entry.target ) );
+		} );
+	} );
+
+	function observeImageGeometry( image ) {
+		if ( ! image || observedImages.has( image ) ) {
+			return;
+		}
+
+		observedImages.add( image );
+		previewResizeObserver.observe( image );
 	}
 
 	/** Aktualisiert die Vorschau bei jeder lokalen Feldänderung – ohne Speicherung. */
@@ -152,7 +191,7 @@
 				Array.prototype.push.apply( scopes, node.querySelectorAll( '.attachment-details' ) );
 				scopes.forEach( function( scope ) {
 					window.requestAnimationFrame( function() {
-						updatePreview( scope );
+						schedulePreviewUpdate( scope );
 					} );
 				} );
 			} );
@@ -161,6 +200,9 @@
 
 	observer.observe( document.documentElement, { childList: true, subtree: true } );
 	Array.prototype.forEach.call( document.querySelectorAll( '.attachment-details' ), updatePreview );
+	window.addEventListener( 'resize', function() {
+		Array.prototype.forEach.call( document.querySelectorAll( '.attachment-details' ), schedulePreviewUpdate );
+	} );
 	document.addEventListener( 'load', function( event ) {
 		var image = event.target instanceof HTMLImageElement ? event.target : null;
 		var scope = image ? getScope( image ) : null;
